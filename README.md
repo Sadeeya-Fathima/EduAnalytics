@@ -47,6 +47,10 @@ Selected attributes include:
 
 The final grade (`G3`) is recorded on a scale from 0 to 20 in the selected dataset.
 
+## Project Documentation
+
+- [MVP Scope and Requirements Specification](docs/MVP_Scope_and_Requirements.md) — Defines the approved features, technology stack, dataset, development plan, team responsibilities, and acceptance criteria.
+
 ## Getting Started
 
 ### Prerequisites
