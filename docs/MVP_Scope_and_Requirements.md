@@ -31,7 +31,17 @@ To develop a simple, secure, and user-friendly academic analytics application th
 - **Administrator:** Manages teacher accounts and oversees uploaded datasets.
 - **Educator:** Uploads permitted datasets and analyzes academic performance.
 
-The MVP is designed for a single institution and is intended for academic analysis, not automated decisions about students.
+The MVP is designed for one institution per installation and is intended for academic analysis, not automated decisions about students. The application runs on one host PC; authorized educators access it through a web browser from other computers on the same institution LAN. The MVP does not require public internet or cloud hosting.
+
+### 1.5 Deployment Model
+
+- **Host:** One designated PC runs the Flask application and stores the SQLite database.
+- **Client computers:** Administrators and educators use a browser on computers connected to the same institution LAN.
+- **Shared data:** All authorized users access the same application and database on the host; data is not stored separately on each client computer.
+- **Access boundary:** The MVP supports local host access and institution-LAN access only. Public internet hosting and access from outside the LAN are excluded.
+- **Host availability:** The host PC and application must be running and reachable for other computers to use the system.
+- **Security:** Authentication and role authorization remain required for all users. The host must use appropriate firewall rules, and the application must use a strong secret key and safe session settings. LAN access does not by itself make the application secure.
+- **Expected workload:** SQLite is selected for the small, classroom-scale MVP. The application is not intended for heavy concurrent write workloads or institution-wide production traffic.
 
 ---
 
@@ -308,7 +318,7 @@ The following features are **not part of Version 1.0**:
 - Multi-institution or multi-college management
 - Arbitrary spreadsheet mapping and support for every school data format
 - Mobile applications
-- Cloud-scale deployment and infrastructure
+- Public cloud hosting, public internet access, and access from outside the institution LAN
 - Separate microservices or backend frameworks
 - PDF report generation and scheduled report delivery
 - Comparing multiple academic terms or datasets as a separate advanced feature
@@ -465,13 +475,22 @@ The MVP is considered complete only when the following criteria are demonstrated
 - [ ] Export results are consistent with the selected dataset and active filters.
 - [ ] The exported file opens in a standard spreadsheet application.
 
-### F. Quality and Delivery
+### F. LAN Deployment and Multi-User Access
+
+- [ ] The application runs on one designated host PC and stores its database on that host.
+- [ ] An authorized user can access the application from a second computer on the same institution LAN using the host's LAN address.
+- [ ] Separate browser sessions can authenticate as different authorized users.
+- [ ] Authentication and role permissions apply equally to local and LAN users.
+- [ ] The host firewall permits only the intended LAN access, and the application is not exposed to the public internet.
+- [ ] The team documents that LAN access depends on the host PC and application remaining available.
+
+### G. Quality and Delivery
 
 - [ ] Core authentication, validation, analytics, filter, and export tests pass.
 - [ ] The main workflow can be demonstrated from login through CSV upload, dashboard analysis, and export.
 - [ ] A new team member can follow the README to set up and run the application.
 - [ ] The project report documents the architecture, dataset, tests, limitations, and future enhancements.
-- [ ] The delivered application runs locally without requiring excluded infrastructure.
+- [ ] The delivered application runs on the host PC and supports intended LAN access without requiring public cloud infrastructure.
 
 **Release rule:** Any failed Must requirement must be fixed or explicitly documented as an unresolved blocker before the team declares the MVP complete.
 
@@ -490,7 +509,7 @@ The MVP is considered complete only when the following criteria are demonstrated
 
 ## 13. Final Definition of Done
 
-EduAnalytics Version 1.0 is complete when an authorized administrator or teacher can log in, upload and validate the agreed UCI-format academic CSV, select the imported dataset, explore correct and interactive academic summaries, filter the results, export matching records as CSV, and complete the workflow without critical errors.
+EduAnalytics Version 1.0 is complete when an authorized administrator or teacher can log in from the host PC or an authorized computer on the institution LAN, upload and validate the agreed UCI-format academic CSV, select the imported dataset, explore correct and interactive academic summaries, filter the results, export matching records as CSV, and complete the workflow without critical errors.
 
 The deliverable must include source code, database setup, test evidence, installation instructions, the project report, and a working demonstration.
 
