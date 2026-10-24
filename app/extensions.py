@@ -1,10 +1,12 @@
 import sqlite3
 
+from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
 db = SQLAlchemy()
+login_manager = LoginManager()
 
 @event.listens_for(Engine, "connect")
 def enable_sqlite_foreign_keys(connection, connection_record):

@@ -1,0 +1,16 @@
+
+{% extends "base.html" %}
+
+{% block title %}EduAnalytics | Home{% endblock %}
+
+{% block content %}
+    <main>
+        <h1>EduAnalytics</h1>
+        <p>You are signed in to EduAnalytics.</p>
+
+        <form method="POST" action="{{ url_for('auth.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit">Log out</button>
+        </form>
+    </main>
+{% endblock %}

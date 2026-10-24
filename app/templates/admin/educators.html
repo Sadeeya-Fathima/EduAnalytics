@@ -1,0 +1,200 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Educator Management | EduAnalytics</title>
+    <link rel="stylesheet"
+      href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">EduAnalytics</div>
+        <div class="topbar-label">Administration</div>
+    </header>
+
+    <main>
+        <div class="page-heading">
+            <p class="eyebrow">Administration / Users</p>
+            <h1>Educator Management</h1>
+            <p class="subtitle">
+                Create educator accounts and manage access to EduAnalytics.
+            </p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages" aria-live="polite">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}" role="status">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="card">
+            <div class="card-heading">
+                <h2>Create Educator Account</h2>
+                <p class="section-description">
+                    Enter the educator's details and assign an institution.
+                </p>
+            </div>
+
+            {% if institutions %}
+                <form method="POST" action="{{ url_for('admin.create_educator') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="userid">User ID *</label>
+                            <input type="text" id="userid" name="userid"
+                                   maxlength="80" autocomplete="off" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email"
+                                   maxlength="255" autocomplete="email" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="first_name">First Name *</label>
+                            <input type="text" id="first_name" name="first_name"
+                                   maxlength="80" autocomplete="given-name" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="last_name">Last Name *</label>
+                            <input type="text" id="last_name" name="last_name"
+                                   maxlength="80" autocomplete="family-name" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="title">Job Title</label>
+                            <input type="text" id="title" name="title"
+                                   maxlength="100" placeholder="e.g. Lecturer">
+                        </div>
+
+                        <div class="field">
+                            <label for="institution_id">Institution *</label>
+                            <select id="institution_id" name="institution_id" required>
+                                <option value="">Select an institution</option>
+                                {% for institution in institutions %}
+                                    <option value="{{ institution.id }}">
+                                        {{ institution.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label for="password">Initial Password *</label>
+                            <input type="password" id="password" name="password"
+                                   minlength="8" autocomplete="new-password" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="confirm_password">Confirm Password *</label>
+                            <input type="password" id="confirm_password"
+                                   name="confirm_password" minlength="8"
+                                   autocomplete="new-password" required>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="primary-button" type="submit">
+                            Create Educator Account
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="empty-state">
+                    <p>
+                        No institution exists yet. Create an institution during
+                        initial database setup first.
+                    </p>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <div class="card-heading">
+                <h2>Existing Educators</h2>
+                <p class="section-description">
+                    Review educator accounts and update their access status.
+                </p>
+            </div>
+
+            {% if educators %}
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">User ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Institution ID</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for educator in educators %}
+                                <tr>
+                                    <td>{{ educator.userid }}</td>
+                                    <td>
+                                        {{ educator.first_name }} {{ educator.last_name }}
+                                    </td>
+                                    <td>{{ educator.email }}</td>
+                                    <td>{{ educator.institution_id }}</td>
+                                    <td>
+                                        <span class="status {{ educator.status }}">
+                                            {{ educator.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <form method="POST"
+                                              action="{{ url_for('admin.change_educator_status', userid=educator.userid) }}">
+                                            <input type="hidden" name="csrf_token"
+                                                   value="{{ csrf_token() }}">
+
+                                            {% if educator.status == "active" %}
+                                                <input type="hidden" name="status"
+                                                       value="inactive">
+                                                <button class="status-button deactivate-button"
+                                                        type="submit"
+                                                        onclick="return confirm('Are you sure you want to deactivate this educator? They will no longer be able to log in.');">
+                                                    Deactivate
+                                                </button>
+                                            {% else %}
+                                                <input type="hidden" name="status"
+                                                       value="active">
+                                                <button class="status-button activate-button"
+                                                        type="submit">
+                                                    Activate
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>No educator accounts found.</p>
+                    <p>Create an educator account using the form above to get started.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <footer class="footer">
+            EduAnalytics · Academic Performance Analytics
+        </footer>
+    </main>
+</body>
+</html>

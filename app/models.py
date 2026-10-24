@@ -1,4 +1,5 @@
 
+from flask_login import UserMixin
 from datetime import datetime, timezone
 
 from app.extensions import db
@@ -21,7 +22,7 @@ class Institution(db.Model):
     users = db.relationship("User", back_populates="institution")
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = "users"
 
     userid = db.Column(db.String(80), primary_key=True)
@@ -48,6 +49,9 @@ class User(db.Model):
     institution = db.relationship("Institution", back_populates="users")
     datasets = db.relationship("Dataset", back_populates="uploader")
 
+    def get_id(self):
+        """Return the string userid used by Flask-Login."""
+        return str(self.userid)
 
 class Dataset(db.Model):
     __tablename__ = "datasets"

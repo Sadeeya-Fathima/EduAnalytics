@@ -1,6 +1,8 @@
 ﻿Flask
 Flask-Login
 Flask-SQLAlchemy
+Flask-WTF
 pandas
 numpy
 pytest
+waitress

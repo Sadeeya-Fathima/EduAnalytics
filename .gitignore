@@ -7,15 +7,17 @@ __pycache__/
 
 # Environment variables and secrets
 .env
+.env.*
 
 # Test and coverage files
 .pytest_cache/
 .coverage
 htmlcov/
 
-# Local database
+# Local database and backups
 instance/
 *.db
+backups/
 
 # IDE
 .vscode/
