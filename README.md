@@ -74,110 +74,115 @@ In the selected UCI dataset, grades are recorded on a scale from 0 to 20. The `s
 
 - [MVP Scope and Requirements Specification](docs/MVP_Scope_and_Requirements.md) — Defines the approved features, technology stack, dataset, development plan, team responsibilities, and acceptance criteria.
 - [Sprint 3 — Authentication and Educator Account Management](docs/Sprint_3_Authentication.md) — Documents authentication and authorization implementation, educator management, regression tests, manual verification, database backup restoration, and remaining closure actions.
+- [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md)
 
-## Getting Started
+## Setup and Deployment
+
+> **Sprint 4 is in progress.** The goal is to provide a simple Windows setup script, a guided first-run setup page, easy start/stop controls, LAN access guidance, and scheduled backups. These features are being implemented and verified phase by phase. Until the automated setup is complete, EduAnalytics still requires the temporary developer setup described below.
 
 ### Prerequisites
 
-- Python
-- Git
-- Visual Studio Code (recommended)
+- Windows 10 or Windows 11 (primary target; macOS and Linux have not been verified)
+- Python 3.12 (tested with Python 3.12.2)
+- Git (tested with Git 2.47.0)
+- Visual Studio Code (recommended, not required)
 
-### Installation
+### 1. Download the project
 
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/Sadeeya-Fathima/EduAnalytics.git
-   cd EduAnalytics
-   ```
-
-2. Create a virtual environment:
-
-   ```bash
-   python -m venv .venv
-   ```
-
-3. Activate the virtual environment in PowerShell:
-
-   ```powershell
-   .\.venv\Scripts\Activate.ps1
-   ```
-
-4. Install dependencies:
-
-   ```bash
-   python -m pip install -r requirements.txt
-   ```
-
-### Initialize the Database
-
-Run the initial database setup script:
-
-```bash
-python -m scripts.initialize_database
-```
-
-Follow the prompts to enter the institution details and initial administrator account information. The administrator password is stored as a hash.
-
-**Important:** Run this setup only when you intend to initialize the local database. Use a strong password and do not commit database files or credentials to Git.
-
-
-### Security Configuration
-
-EduAnalytics requires a secret key to protect session data and other security-related functionality. The application reads this value from the `SECRET_KEY` environment variable and will not start if it is missing.
-
-#### Configure the Secret Key on Windows
-
-In PowerShell, run the following command **once** to generate a random secret key and store it in your Windows user environment variables:
+Open PowerShell in the folder where you want the project and run:
 
 ```powershell
-$key = python -c "import secrets; print(secrets.token_hex(32))"
-[Environment]::SetEnvironmentVariable("SECRET_KEY", $key, "User")
+git clone https://github.com/Sadeeya-Fathima/EduAnalytics.git
+cd EduAnalytics
+```
+
+### 2. Setup and deployment workflow
+
+The intended end-user workflow is:
+
+1. Run one setup script to check prerequisites, install dependencies, configure the secret key, and initialize the database safely.
+2. Open the application in a browser and follow the first-run steps to create the institution and initial Administrator account.
+3. Start or stop the application using simple Windows scripts or shortcuts.
+4. Open the displayed local address on the host computer or use the LAN address from an authorized device on the same network.
+5. Configure daily, weekly, or monthly backups and use the documented restore process if needed.
+
+**Implementation status:** This is the target workflow, not yet a fully available installer. Follow the temporary developer instructions below only when setting up the current development version. As Sprint 4 phases are completed, this section will be updated with the verified user-facing steps.
+
+### Temporary developer setup (until automated setup is ready)
+
+These steps are for project development and verification, not the intended final end-user experience.
+
+#### Install dependencies
+
+From the project root, create and activate a virtual environment, then install the requirements:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+#### Configure the secret key
+
+EduAnalytics requires a persistent `SECRET_KEY`. The application will not start if the current process cannot access it. Run this block once in PowerShell if a user-level key has not already been configured:
+
+```powershell
+$key = [Environment]::GetEnvironmentVariable("SECRET_KEY", "User")
+if ([string]::IsNullOrWhiteSpace($key)) {
+    $key = python -c "import secrets; print(secrets.token_hex(32))"
+    [Environment]::SetEnvironmentVariable("SECRET_KEY", $key, "User")
+}
 $env:SECRET_KEY = $key
 Remove-Variable key
 ```
 
-This command does not print the key. Keep it private and do not hardcode it in application code or commit it to Git.
+This preserves an existing user-level key and creates one only if it is missing. A newly opened terminal may load the persistent variable automatically; an already-open terminal may need the value loaded into its session. Never print, commit, or share the key. Keep the same key across restarts.
 
-For future PowerShell sessions, Windows supplies the saved user environment variable to newly opened terminals. If the variable is missing, configure it again securely before starting the application.
+#### Initialize the database
 
-#### Verify the Configuration
-
-Check whether the variable is configured without displaying its value:
+For the current development version, run:
 
 ```powershell
-if ([string]::IsNullOrWhiteSpace($env:SECRET_KEY)) {
-    "SECRET_KEY is not set in this session."
-} else {
-    "SECRET_KEY is configured in this session."
-}
+python -m scripts.initialize_database
 ```
 
-#### Git and Deployment Safety
+Follow the prompts to enter institution details and initial Administrator account information. Run this only when you intend to initialize the local database. Do not delete or reset an existing database as a troubleshooting step.
 
-- `.env` and `.env.*` files are ignored by Git. Never commit secret values.
-- Do not share the secret key in source code, screenshots, logs, or messages.
-- Keep the same secret key across application restarts. Changing it may invalidate existing sessions.
-- Before running EduAnalytics on a shared LAN, disable debug mode and configure the host, firewall, and database backups appropriately.
+#### Start the application for local development
 
-### Database Backup and Restoration
+```powershell
+python -m flask --app app:create_app run --debug
+```
 
-Database backups help recover the application if the database is accidentally deleted, corrupted, or damaged during development. Keep backups outside the Git repository so they are not accidentally committed or shared publicly.
+Open `http://127.0.0.1:5000` in a browser. The Flask debug server is for local development only; do not expose it for shared/LAN access.
 
-#### Create a Backup on Windows
+#### Shared/LAN testing
 
-Run these commands from the project root with your virtual environment activated.
+For trusted local-network testing, use Waitress instead of the Flask development server. Make sure `SECRET_KEY` is available in the PowerShell session.
 
-**1. Create a backup folder outside the repository**
+1. Run `ipconfig` and find the IPv4 address for the active Wi-Fi or Ethernet adapter.
+2. Start Waitress, replacing `<HOST-PC-IP>` with the host computer's private IPv4 address:
+
+   ```powershell
+   python -m waitress --host=<HOST-PC-IP> --port=8000 --call app:create_app
+   ```
+
+3. On the host computer, open `http://127.0.0.1:8000`. On another authorized device on the same network, open `http://<HOST-PC-IP>:8000`.
+4. Press `Ctrl+C` in the terminal running Waitress to stop it.
+
+Do not disable the firewall to make this work. Review firewall and network policies for the intended access scope. The host IP may change after reconnecting. This is for trusted LAN testing, not production deployment.
+
+#### Manual database backup and restore (developer procedure)
+
+Backups must be stored outside the repository and protected from unauthorized access. The application's SQLite database is normally `instance\eduanalytics.db`.
+
+Create a backup folder outside the repository:
 
 ```powershell
 New-Item -ItemType Directory -Force "..\EduAnalytics_Backups"
 ```
 
-**2. Create and verify a consistent SQLite backup**
-
-The application database is normally located at `instance\eduanalytics.db`. Run the following Python script from the project root:
+Use SQLite's backup API to create a consistent copy and verify its integrity:
 
 ```powershell
 @'
@@ -199,9 +204,7 @@ try:
     with sqlite3.connect(source) as original:
         with sqlite3.connect(destination) as backup:
             original.backup(backup)
-            result = backup.execute(
-                "PRAGMA integrity_check"
-            ).fetchone()[0]
+            result = backup.execute("PRAGMA integrity_check").fetchone()[0]
 
     if result != "ok":
         destination.unlink(missing_ok=True)
@@ -209,105 +212,36 @@ try:
 
     print(f"Backup created: {destination}")
     print(f"Integrity check: {result}")
-
 except Exception:
     destination.unlink(missing_ok=True)
     raise
 '@ | python -
 ```
 
-The script uses SQLite's backup API, verifies the resulting database, and reports the backup location. Confirm that the integrity result is `ok`.
-
-#### Restore and Verify a Backup
-
-1. Stop the application before replacing or restoring its database.
-2. Keep a separate copy of the current database before making changes.
-3. Restore the selected backup to a separate test location first; do not overwrite the working database during a restoration test.
-4. Check the restored copy using SQLite:
+The expected integrity result is `ok`. To test a restore, restore the backup to a separate test location first; do not overwrite the active database during a restoration test. Check the restored copy with SQLite:
 
 ```powershell
 python -c "import sqlite3; c=sqlite3.connect('file:PATH_TO_RESTORED_DB?mode=ro', uri=True); print(c.execute('PRAGMA integrity_check').fetchone()[0]); c.close()"
 ```
 
-Replace `PATH_TO_RESTORED_DB` with the restored database path, using forward slashes and URL-encoding any special characters if necessary. The expected result is `ok`. For a stronger restoration test, verify that the expected tables and records are present and that the application can initialize against a disposable copy.
+Replace `PATH_TO_RESTORED_DB` with the actual restored database path. For a stronger test, verify expected tables and records and check that the application can use a disposable copy. Automated daily, weekly, and monthly backup scheduling is not yet implemented.
 
-#### Backup Safety
-
-- Keep backup files outside the repository and ensure access is restricted to authorized users.
-- Never commit database files containing account records, personal information, or institutional data to a public repository.
-- Check `.gitignore` to ensure local database files and backup directories are excluded. Git ignore rules do not remove files that are already tracked.
-- Store an additional copy in an appropriately protected location if the data is important.
-- Before using real institutional data, obtain the required authorization and follow the institution's data-handling requirements.
-
-### Run Locally for Development
-
-Use Flask's development server for local development only. Do not use debug mode for shared/LAN access.
-
-```bash
-python -m flask --app app:create_app run --debug
-```
-
-Open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
-
-The application includes authentication, role-based access control, and educator management. Run `python -m pytest -q` to execute the automated test suite. The project may still have features under development; consult the project documentation for current scope and limitations.
-
-### Run for Shared/LAN Testing
-
-To access EduAnalytics from another device on the same trusted local network, use Waitress instead of Flask's development server.
-
-**1. Configure the environment**
-
-Ensure `SECRET_KEY` is configured in the PowerShell session running the application.
-
-**2. Find the host computer's private IPv4 address**
-
-On Windows, run:
+#### Run automated tests
 
 ```powershell
-ipconfig
-```
-
-Under the active Wi-Fi or Ethernet adapter, find the `IPv4 Address` (for example, `192.168.1.5`). Use your own computer's address, not the example.
-
-**3. Start Waitress**
-
-Replace `<HOST-PC-IP>` with the private IPv4 address found in Step 2:
-
-```powershell
-python -m waitress --host=<HOST-PC-IP> --port=8000 --call app:create_app
-```
-
-For example, if your computer's address is `192.168.1.5`:
-
-```powershell
-python -m waitress --host=192.168.1.5 --port=8000 --call app:create_app
-```
-
-**4. Open the application**
-
-- On the host computer, open `http://127.0.0.1:8000`.
-- On another device connected to the same LAN, open `http://<HOST-PC-IP>:8000`, replacing the placeholder with the host's actual private IPv4 address.
-
-**5. Stop the server**
-
-Press `Ctrl+C` in the terminal running Waitress.
-
-**Security notes:**
-- Do not use Flask debug mode for shared access.
-- Binding to a specific IP limits the listener to that interface, but does not replace firewall controls.
-- The host's IP address may change after reconnecting to the network. Check it again if the connection stops working.
-- Windows Firewall must be configured appropriately for the intended network and access scope. Do not assume access is restricted to trusted devices.
-- If access is blocked, ask the network administrator to review the firewall and network policies rather than disabling the firewall.
-- This setup is intended for trusted LAN testing, not production deployment.
-
-### Run Tests
-
-```bash
 python -m pytest -q
 ```
 
-The latest recorded full automated test suite passed 39 tests. Run the
-command above to verify the current result in your local environment.
+The latest recorded full test suite passed 39 tests. Run the command above to check the current working copy.
+
+### Security and data protection
+
+- Never commit secret keys, passwords, local databases, or sensitive backups.
+- Keep backups outside the repository and restrict access to authorized users.
+- Setup must not replace an existing secret key or delete/reset an existing database during ordinary reruns.
+- Do not expose Flask debug mode on a LAN.
+- Initial setup must be protected against unauthorized reuse after completion.
+- Do not use real institutional data until storage location and access permissions have been reviewed.
 
 ## Project Status
 
