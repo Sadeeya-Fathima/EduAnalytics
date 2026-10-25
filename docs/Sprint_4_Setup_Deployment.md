@@ -1,8 +1,8 @@
-﻿# Sprint 4 â€” Setup & Deployment
+﻿# Sprint 4 - Setup & Deployment
 
 **Project:** EduAnalytics
 **Sprint goal:** Make EduAnalytics straightforward for a non-technical Windows user to install, configure, start, access over a local network, maintain, and back up securely.
-**Status:** Planned â€” implementation and verification are tracked phase by phase.
+**Status:** Planned - implementation and verification are tracked phase by phase.
 **Target platform:** Windows 10/11 (primary target; other operating systems are unverified).
 **Last updated:** 2026-10-25
 
@@ -52,7 +52,7 @@ The user-facing workflow should hide routine developer details behind scripts an
 
 ## 4. Phase plan and tracking
 
-### Phase 1 â€” Installation foundation and prerequisites
+### Phase 1 - Installation foundation and prerequisites
 
 **Objective:** Establish the supported Windows environment and make initial installation as close to a one-script workflow as practical.
 
@@ -70,17 +70,17 @@ The user-facing workflow should hide routine developer details behind scripts an
 **Files to inspect or update:** `README.md`, `requirements.txt`, `.gitignore`, `app/__init__.py`, and new Windows setup script(s).
 
 **Verification evidence so far**
-- `python -m pip check` â€” no broken requirements found.
-- `python -m pytest -q` â€” 39 passed in 17.55 seconds.
-- `python -m pip install -r requirements.txt` â€” dependencies already satisfied.
-- `python -m flask --app app:create_app routes` â€” routes registered successfully after loading the existing persistent `SECRET_KEY` into the current PowerShell session.
+- `python -m pip check` - no broken requirements found.
+- `python -m pytest -q` - 39 passed in 17.55 seconds.
+- `python -m pip install -r requirements.txt` - dependencies already satisfied.
+- `python -m flask --app app:create_app routes` - routes registered successfully after loading the existing persistent `SECRET_KEY` into the current PowerShell session.
 - The current terminal did not automatically have the persistent user-level `SECRET_KEY` loaded. The eventual setup/start workflow must handle this clearly and reliably without generating a new key unnecessarily.
 - These checks were run in the existing environment; a clean-clone setup test has not yet been completed.
 
 **Status:** In progress
 **Notes / decisions:** Windows 10/11 is the initial target. Python 3.12.2 and Git 2.47.0 are the versions tested so far; do not claim other operating systems or versions are verified.
 
-### Phase 2 â€” Secure automated setup and database initialization
+### Phase 2 - Secure automated setup and database initialization
 
 **Objective:** Make setup configure the application safely without requiring the user to understand environment variables or database commands.
 
@@ -101,7 +101,7 @@ The user-facing workflow should hide routine developer details behind scripts an
 **Status:** Not started
 **Notes / decisions:** _Add during implementation._
 
-### Phase 3 â€” First-run institution and Administrator setup
+### Phase 3 - First-run institution and Administrator setup
 
 **Objective:** Complete initial configuration through a browser UI.
 
@@ -120,7 +120,7 @@ The user-facing workflow should hide routine developer details behind scripts an
 **Status:** Not started
 **Notes / decisions:** _Add during implementation._
 
-### Phase 4 â€” Easy start, stop, and restart
+### Phase 4 - Easy start, stop, and restart
 
 **Objective:** Let users run the application without remembering terminal commands.
 
@@ -140,7 +140,7 @@ The user-facing workflow should hide routine developer details behind scripts an
 **Status:** Not started
 **Notes / decisions:** _Add during implementation._
 
-### Phase 5 â€” LAN access and deployment guidance
+### Phase 5 - LAN access and deployment guidance
 
 **Objective:** Make access from authorized devices on the same local network easy to understand and use.
 
@@ -157,7 +157,7 @@ The user-facing workflow should hide routine developer details behind scripts an
 **Status:** Not started
 **Notes / decisions:** _Add during implementation._
 
-### Phase 6 â€” Scheduled backup and recovery
+### Phase 6 - Scheduled backup and recovery
 
 **Objective:** Make regular backups easy to configure and recovery safe to test.
 
@@ -179,7 +179,7 @@ The user-facing workflow should hide routine developer details behind scripts an
 **Status:** Not started
 **Notes / decisions:** _Add during implementation._
 
-### Phase 7 â€” End-to-end testing and user documentation
+### Phase 7 - End-to-end testing and user documentation
 
 **Objective:** Validate the complete experience from a fresh checkout through normal operation and recovery.
 
