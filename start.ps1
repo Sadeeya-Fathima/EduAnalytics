@@ -2,6 +2,17 @@
 $ErrorActionPreference = "Stop"
 
 $ProjectRoot = $PSScriptRoot
+
+$ListenHost = [Environment]::GetEnvironmentVariable(
+    "EDUANALYTICS_HOST",
+    "Process"
+)
+
+if ([string]::IsNullOrWhiteSpace($ListenHost)) {
+    $ListenHost = "127.0.0.1"
+}
+
+$ListenPort = 5000
 $VenvPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
 $PidFile = Join-Path $ProjectRoot ".eduanalytics.pid"
 $LogFile = Join-Path $ProjectRoot "eduanalytics.log"
@@ -76,7 +87,7 @@ try {
         -ArgumentList @(
             "-m",
             "waitress",
-            "--listen=127.0.0.1:5000",
+            "--listen=${ListenHost}:${ListenPort}",
             "--call",
             "app:create_app"
         ) `
@@ -99,13 +110,53 @@ try {
 
     try {
         $Response = Invoke-WebRequest `
-            -Uri "http://127.0.0.1:5000/" `
+            -Uri "http://127.0.0.1:$ListenPort/" `
             -TimeoutSec 5 `
             -UseBasicParsing `
             -ErrorAction Stop
 
         Write-Host "EduAnalytics started successfully." -ForegroundColor Green
-        Write-Host "Local URL: http://127.0.0.1:5000"
+        Write-Host "Local URL: http://127.0.0.1:$ListenPort/"
+        Write-Host "Listening host: $ListenHost"
+
+        if ($ListenHost -eq "0.0.0.0") {
+            $LanAddresses = @()
+
+            try {
+                $LanAddresses = @(
+                    Get-NetIPConfiguration -ErrorAction Stop |
+                        Where-Object {
+                            $_.IPv4DefaultGateway -ne $null -and
+                            $_.NetAdapter.Status -eq "Up"
+                        } |
+                        ForEach-Object { $_.IPv4Address.IPAddress } |
+                        Where-Object {
+                            $_ -and
+                            $_ -notmatch '^127\.' -and
+                            $_ -notmatch '^169\.254\.'
+                        } |
+                        Sort-Object -Unique
+                )
+            }
+            catch {
+                Write-Host "Could not automatically detect LAN addresses. Find them with Get-NetIPConfiguration." -ForegroundColor Yellow
+            }
+
+            if ($LanAddresses.Count -gt 0) {
+                Write-Host "LAN URL(s):" -ForegroundColor Cyan
+
+                foreach ($Address in $LanAddresses) {
+                    Write-Host "  http://${Address}:$ListenPort/"
+                }
+            }
+            else {
+                Write-Host "LAN address not detected. Find it with Get-NetIPConfiguration." -ForegroundColor Yellow
+            }
+        }
+        elseif ($ListenHost -notin @("127.0.0.1", "localhost")) {
+            Write-Host "Configured host URL: http://${ListenHost}:$ListenPort/"
+        }
+
         Write-Host "HTTP status: $([int]$Response.StatusCode)"
     }
     catch {

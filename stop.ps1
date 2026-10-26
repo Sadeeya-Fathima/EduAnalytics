@@ -40,7 +40,7 @@ try {
         $ServerProcess.ExecutablePath -ne $VenvPython -or
         $CommandLine -notmatch '(?i)waitress' -or
         $CommandLine -notmatch '(?i)app:create_app' -or
-        $CommandLine -notmatch '(?i)127\.0\.0\.1:5000'
+        $CommandLine -notmatch '(?i)--listen(?:=|\s+)'
     ) {
         throw "Recorded PID does not match the expected EduAnalytics server. Nothing was stopped. Inspect .eduanalytics.pid."
     }

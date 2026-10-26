@@ -88,7 +88,7 @@ In the selected UCI dataset, grades are recorded on a scale from 0 to 20. The `s
 
 ## Setup and Deployment
 
-> **Sprint 4 is in progress.** The Windows setup script (`setup.ps1`), browser-based first-run Administrator setup, and Phase 4 application lifecycle scripts (`start.ps1` and `stop.ps1`) are implemented. Phase 4 verification confirmed successful Waitress startup, HTTP 200 at `http://127.0.0.1:5000`, duplicate-start prevention, successful shutdown, and unchanged database row counts across a start/stop cycle. The persistent user-level `SECRET_KEY` is configured and loaded by the start script without printing or replacing it. LAN access from another device and scheduled backup/recovery workflows remain to be implemented and verified. See [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for phase details and outstanding work.
+> **Sprint 4 is in progress.** The Windows setup script (`setup.ps1`), browser-based first-run Administrator setup, and application lifecycle scripts (`start.ps1` and `stop.ps1`) are implemented. Localhost lifecycle checks passed, and configurable LAN binding and sign-in-page access from a second device on the same Wi-Fi have been verified. The persistent user-level `SECRET_KEY` is loaded by the start script without printing or replacing it. Displaying the actual LAN URL at startup and scheduled backup/recovery workflows remain outstanding. See [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for phase details and remaining work.
 
 ### Prerequisites
 
@@ -113,12 +113,49 @@ The intended end-user workflow is:
 1. Run the setup script (`setup.ps1`) to check prerequisites, install dependencies, configure the secret key, and initialize the database safely.
 2. Open the application in a browser and follow the first-run steps to create the institution and initial Administrator account.
 3. Start or stop the application using the provided Windows scripts (`start.ps1` and `stop.ps1`).
-4. Access the application at `http://127.0.0.1:5000` on the host computer. Access from other devices on the same network will be supported after LAN configuration is implemented and verified in Phase 5.
-5. Configure daily, weekly, or monthly backups and use the documented restore process if needed. Backup scheduling and recovery workflows remain planned for a later phase.
+4. By default, access the application at `http://127.0.0.1:5000` on the host computer. For trusted same-Wi-Fi LAN testing, see [LAN access](#lan-access-on-a-trusted-local-network) below.
+5. Scheduled backups and recovery workflows are not implemented yet; see the Sprint 4 document for status.
 
-**Implementation status:** The setup script, browser-based first-run Administrator setup, and Phase 4 application lifecycle scripts (`start.ps1` and `stop.ps1`) are implemented. Runtime verification confirmed that the application starts successfully using Waitress, returns HTTP 200 at `http://127.0.0.1:5000`, prevents duplicate managed instances, and shuts down successfully. Database row counts remained unchanged across a start/stop cycle. The persistent user-level `SECRET_KEY` is configured and loaded by the start script without printing or replacing it.
+**Implementation status:** The managed scripts use Waitress, default to localhost, and support an optional `EDUANALYTICS_HOST` override. Localhost lifecycle checks passed; LAN binding and second-device sign-in-page access were also verified on one Wi-Fi network.
 
-**Current limitations:** The application is currently configured for access on the host computer only. LAN access from another device, scheduled backups, and automated recovery remain to be implemented and verified. Refer to [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for the current implementation status and remaining work.
+**Current limitations:** The start script does not yet display the actual LAN URL automatically. LAN access on other networks, production deployment, scheduled backups, and automated recovery have not been verified or completed. Refer to [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for current status.
+
+### LAN access on a trusted local network
+
+LAN access is optional. The default is **localhost only**, which means the app is available on the host computer at `http://127.0.0.1:5000`.
+
+To test access from another authorized device on the **same trusted Wi-Fi or wired LAN**, open PowerShell in the project root on the host computer and run:
+
+```powershell
+$env:EDUANALYTICS_HOST = "0.0.0.0"
+.\start.ps1
+```
+
+Find the host computer's private IPv4 address:
+
+```powershell
+Get-NetIPConfiguration |
+    Where-Object {
+        $_.IPv4DefaultGateway -ne $null -and
+        $_.NetAdapter.Status -eq "Up"
+    } |
+    Select-Object InterfaceAlias,
+        @{Name="IPv4Address"; Expression={$_.IPv4Address.IPAddress}},
+        @{Name="Gateway"; Expression={$_.IPv4DefaultGateway.NextHop}}
+```
+
+Choose the IPv4 address for the active Wi-Fi or Ethernet adapter. On the tested network, the host address was `192.168.1.20`; that address is only an example and may differ on your network. On the second device, open `http://<HOST-PC-IP>:5000`, replacing `<HOST-PC-IP>` with the host's actual private IPv4 address.
+
+Both devices must be on the same network, and network/router client isolation or Windows Firewall rules may block connections. Do **not** disable the firewall. If Windows asks about network access, allow only the appropriate trusted private-network scope after reviewing the prompt; do not create broad inbound access unnecessarily. No firewall rules are added automatically by the project.
+
+`0.0.0.0` is the server's listening address, not the URL to enter in a browser. To return to localhost-only mode, stop the server and clear the temporary override in the same PowerShell session:
+
+```powershell
+.\stop.ps1
+Remove-Item Env:EDUANALYTICS_HOST -ErrorAction SilentlyContinue
+```
+
+The override above applies only to the current PowerShell process. The next start defaults to localhost unless `EDUANALYTICS_HOST` is set again. The managed start script does not yet display the actual LAN URL automatically. A host's private IP can change when reconnecting or moving to another network. This procedure is for trusted LAN testing, not internet-facing or production deployment.
 
 ### Temporary developer setup (until automated setup is ready)
 
@@ -275,7 +312,7 @@ The latest recorded full test suite passed **52 tests**. Run the command above t
 
 ## Project Status
 
-**Current milestone:** Authentication, authorization, educator management, shared page styling, and Phase 4 application lifecycle scripts have been implemented. The setup script and browser-based first-run Administrator setup are also available. Phase 4 runtime verification confirmed successful Waitress startup, HTTP 200 at `http://127.0.0.1:5000`, duplicate-start prevention, successful shutdown, and unchanged database row counts across a start/stop cycle. LAN access from other devices and scheduled backup/recovery workflows remain outstanding. See [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for phase-by-phase status.
+**Current milestone:** Authentication, authorization, educator management, setup, first-run Administrator setup, and lifecycle scripts are implemented. Localhost lifecycle checks passed, and same-network LAN binding and sign-in-page access from a second device have been verified. Automatic LAN URL display, scheduled backup/recovery, and cross-network/production deployment verification remain outstanding. See [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for phase-by-phase status.
 
 **Remaining Sprint 3 closure work:** Verify network portability on another trusted network and verify access restrictions on the external database backup before using real institutional data. Logout controls for future authenticated pages remain deferred until those pages are implemented.
 

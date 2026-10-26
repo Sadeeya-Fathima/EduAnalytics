@@ -2,7 +2,7 @@
 
 **Project:** EduAnalytics
 **Sprint goal:** Make EduAnalytics straightforward for a non-technical Windows user to install, configure, start, access over a local network, maintain, and back up securely.
-**Status:** In progress - Phases 1-4 complete to their documented scope; LAN deployment and backup/recovery remain open.
+**Status:** In progress - Phases 1-4 complete to their documented scope; Phase 5 LAN binding and second-device access verified, with startup LAN URL display and backup/recovery still open.
 **Target platform:** Windows 10/11 (primary target; other operating systems are unverified).
 **Last updated:** 2026-10-26
 
@@ -199,17 +199,23 @@ The user-facing workflow should hide routine developer details behind scripts an
 **Objective:** Make access from authorized devices on the same local network easy to understand and use.
 
 **Planned work**
-- [ ] Bind the server to the intended LAN interface without enabling debug mode.
-- [ ] Show or explain how to find the host computer's LAN address.
-- [ ] Display the address users should open on another device.
-- [ ] Explain same-network requirements and firewall prompts in plain language.
-- [ ] Test access from a second authorized device.
-- [ ] Document known limitations when moving to a different network.
+- [x] Add configurable Waitress binding through `EDUANALYTICS_HOST`, retaining `127.0.0.1` as the default and keeping debug mode disabled in the managed lifecycle workflow.
+- [x] Document how to find the host computer's active LAN IPv4 address.
+- [ ] Display the actual LAN URL (`http://<HOST-PC-IP>:5000`) in the `start.ps1` output when LAN binding is enabled.
+- [x] Document same-network requirements and safe firewall guidance; no firewall rules were created automatically.
+- [x] Test access from a second authorized device.
+- [x] Document that the host's private IP can change on another network and that cross-network portability has not been tested.
 
-**Verification evidence:** Record the host configuration, client device used, and observed result. Do not claim cross-network portability until it has been tested.
+**Verification evidence**
+- Default mode: with `EDUANALYTICS_HOST` cleared from the current PowerShell process, `.\start.ps1` started successfully, `http://127.0.0.1:5000/` returned HTTP 200, `.\stop.ps1` stopped the server, and `.eduanalytics.pid` was removed.
+- LAN mode: set `$env:EDUANALYTICS_HOST = "0.0.0.0"` in the current PowerShell session and ran `.\start.ps1`. Startup succeeded; local HTTP access returned 200; `Get-NetTCPConnection -State Listen -LocalPort 5000` showed `0.0.0.0` in `Listen` state.
+- Host network: active Wi-Fi adapter reported private IPv4 address `192.168.1.20` and gateway `192.168.1.1`.
+- Second-device test: another authorized device on the same Wi-Fi network loaded the EduAnalytics sign-in page at `http://192.168.1.20:5000`. The sign-in page also loaded on the host.
+- Cleanup: `.\stop.ps1` stopped the LAN-bound server, and `EDUANALYTICS_HOST` was removed from the current PowerShell process environment. The next startup therefore uses the safe default `127.0.0.1` unless an override is set.
 
-**Status:** Not started
-**Notes / decisions:** _Add during implementation._
+**Status:** In progress — configurable binding and second-device access verified; startup display of the host's actual LAN URL remains outstanding.
+
+**Notes / decisions:** `0.0.0.0` is a listening address, not an address clients should open. It binds all IPv4 interfaces, so use it only on a trusted network and review firewall scope rather than disabling the firewall. No firewall rules were added. A successful test on Wi-Fi `192.168.1.0/24` does not establish portability to another network or production readiness. The server was stopped after the test, and the temporary process-level override was cleared.
 
 ### Phase 6 - Scheduled backup and recovery
 
@@ -263,6 +269,7 @@ Add a dated entry whenever a phase is implemented, tested, or deliberately defer
 | 2026-10-25 | Phase 1 | Implemented and verified `setup.ps1`; tested setup in the existing environment and a clean project copy. | 47 tests passed in both environments; setup completed in both; clean-copy Flask app initialized and `/setup/` returned HTTP 200. Existing database excluded from the clean copy. Separate-user and deliberate failure-scenario testing remain outstanding. |
 | 2026-10-25 | Phases 2–3 | Continued setup verification in an isolated temporary copy; manually completed first-run registration, Admin login, and repeat-setup check. | Dependencies installed; `pip check` reported no broken requirements; repeat setup returned HTTP 403; full suite passed with 51 tests in 9.14 seconds. Missing-prerequisite, separate-user, concurrency, and deployment-specific checks remain open. |
 | 2026-10-26 | Phases 2–3 | Verified prerequisite failure handling and first-run setup concurrency; updated setup tests. | Missing-Python/Git simulations returned exit code 1; focused setup suite passed 9 tests; full suite passed 52 tests in 20.64 seconds. Separate-user and multi-process deployment checks remain outstanding. |
+| 2026-10-26 | Phase 5 | Added configurable LAN binding through `EDUANALYTICS_HOST` and tested second-device access. | Default localhost lifecycle passed; LAN mode listened on `0.0.0.0:5000`; host `192.168.1.20` served the sign-in page to a second device on the same Wi-Fi; LAN server stopped and temporary override cleared. Startup display of the actual LAN URL remains outstanding. |
 
 ## 6. Issues and deferred work
 
@@ -270,6 +277,7 @@ Add a dated entry whenever a phase is implemented, tested, or deliberately defer
 |---|---|---|---|
 | Current terminal may not load persistent `SECRET_KEY` | A user-level environment variable may be missing from an already-open PowerShell session. | Continue using the start script's process-level then user-level key lookup; perform separate-user verification before shared deployment. | Resolved for the tested local workflow; separate-user verification pending |
 | Verify external backup access permissions | Backup existence and integrity do not establish that access is appropriately restricted. | Review and verify folder permissions before using real institutional data. | Pending |
+| Display the actual LAN URL at startup | The script reports the listening host but does not yet resolve and display the host's private LAN IPv4 URL. | Add a safe LAN URL display to `start.ps1` and verify it with LAN binding enabled. | Pending |
 | Test LAN portability on a different network | A successful test on one Wi-Fi network does not prove portability to another. | Test when the target network is available and document any configuration changes. | Deferred |
 
 Add new issues here as they arise.
@@ -288,8 +296,8 @@ Add new issues here as they arise.
 
 Complete this section at the end of the sprint.
 
-- **Final status:** _In progress - Phases 1-4 complete to their documented scope; LAN and backup/recovery work remains._
+- **Final status:** _In progress - Phases 1-4 complete to their documented scope; Phase 5 LAN binding and same-network access verified, with LAN URL display and Phase 6 backup/recovery still outstanding._
 - **Definition of Done:** _Not yet fully verified; deployment-specific checks remain._
-- **Automated tests:** `52 passed in 10.44s` on 2026-10-26.
-- **Known limitations:** _Record remaining limitations_
+- **Automated tests:** Latest recorded full suite: `52 passed in 20.64s` on 2026-10-26. Rerun after the current Phase 5 script edits to verify the working copy.
+- **Known limitations:** LAN access was verified only on one Wi-Fi network; the private host IP can change, startup does not yet display the actual LAN URL, and production/cross-network deployment has not been verified. Backup scheduling and recovery remain outstanding.
 - **Commit(s):** _Add relevant commit hashes_
