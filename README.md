@@ -14,16 +14,24 @@ The project is being developed incrementally, with an emphasis on data managemen
 - Import student records from CSV files.
 - Export filtered data for further analysis.
 
-## Planned Features
+## Features
 
-- **Authentication:** Admin and teacher login with secure password hashing.
-- **Teacher Management:** Admin-controlled teacher accounts.
+### Implemented
+
+- **Authentication:** Administrator and educator login with password-hash verification.
+- **Educator Management:** Administrator-controlled educator account creation, activation, and deactivation.
+- **Access Control:** Role-based protection for administrator routes and rejection of inactive accounts.
+- **Setup and Deployment:** Windows setup script (`setup.ps1`), browser-based first-run Administrator setup, and application start/stop scripts (`start.ps1` and `stop.ps1`).
+- **Security:** CSRF protection and persistent application secret-key handling.
+
+### Planned
+
 - **CSV Data Import:** Upload, preview, validate, and import student data.
 - **Analytics Dashboard:** Summary statistics, charts, filters, and group comparisons.
 - **Data Export:** Export filtered records as CSV.
 - **Import History:** Track dataset imports.
 
-> EduAnalytics is under active development. The features listed above are planned capabilities and are not all implemented yet.
+> EduAnalytics is under active development. Features listed as planned are not yet available as completed functionality.
 
 ## Technology Stack
 
@@ -43,16 +51,18 @@ The following components have been implemented:
 - Flask application factory and application configuration.
 - SQLAlchemy database models for institutions, users, datasets, student records, and upload errors.
 - Database relationships and SQLite foreign-key enforcement.
-- Initial database setup script for creating the institution and administrator account.
-- Authentication and login with password-hash verification.
-- Session handling, logout, and rejection of inactive accounts.
-- Role-based protection for administrator routes.
+- Initial database setup and browser-based first-run flow for creating the institution and initial Administrator account.
+- Authentication, login, password-hash verification, session handling, and logout.
+- Rejection of inactive accounts and role-based protection for administrator routes.
 - Administrator-controlled educator account creation, activation, and deactivation.
 - CSRF protection for forms and state-changing requests.
 - Shared home-page template and extracted CSS for the home and educator-management pages.
+- Windows setup script (`setup.ps1`) and application lifecycle scripts (`start.ps1` and `stop.ps1`).
+- Waitress-based local startup, duplicate-instance prevention, and managed application shutdown.
+- Persistent user-level `SECRET_KEY` loading by the start script without printing or replacing the key.
 - Automated regression tests for authentication, authorization, educator management, and database behavior.
 
-The latest recorded full automated test suite passed **39 tests**. See the Sprint 3 documentation for verification evidence and outstanding tasks.
+The latest recorded full automated test suite passed **52 tests**. See the Sprint 3 documentation for regression-test evidence and outstanding tasks. Run the test suite again to verify the current working copy.
 
 CSV import, academic analytics dashboards, charts, filtering, and data export remain planned features.
 
@@ -74,11 +84,11 @@ In the selected UCI dataset, grades are recorded on a scale from 0 to 20. The `s
 
 - [MVP Scope and Requirements Specification](docs/MVP_Scope_and_Requirements.md) — Defines the approved features, technology stack, dataset, development plan, team responsibilities, and acceptance criteria.
 - [Sprint 3 — Authentication and Educator Account Management](docs/Sprint_3_Authentication.md) — Documents authentication and authorization implementation, educator management, regression tests, manual verification, database backup restoration, and remaining closure actions.
-- [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md)
+- [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) — Tracks setup automation, first-run configuration, application lifecycle scripts, LAN access, backup/recovery, and verification status.
 
 ## Setup and Deployment
 
-> **Sprint 4 is in progress.** The goal is to provide a simple Windows setup script, a guided first-run setup page, easy start/stop controls, LAN access guidance, and scheduled backups. These features are being implemented and verified phase by phase. Until the automated setup is complete, EduAnalytics still requires the temporary developer setup described below.
+> **Sprint 4 is in progress.** The Windows setup script (`setup.ps1`), browser-based first-run Administrator setup, and Phase 4 application lifecycle scripts (`start.ps1` and `stop.ps1`) are implemented. Phase 4 verification confirmed successful Waitress startup, HTTP 200 at `http://127.0.0.1:5000`, duplicate-start prevention, successful shutdown, and unchanged database row counts across a start/stop cycle. The persistent user-level `SECRET_KEY` is configured and loaded by the start script without printing or replacing it. LAN access from another device and scheduled backup/recovery workflows remain to be implemented and verified. See [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for phase details and outstanding work.
 
 ### Prerequisites
 
@@ -100,17 +110,19 @@ cd EduAnalytics
 
 The intended end-user workflow is:
 
-1. Run one setup script to check prerequisites, install dependencies, configure the secret key, and initialize the database safely.
+1. Run the setup script (`setup.ps1`) to check prerequisites, install dependencies, configure the secret key, and initialize the database safely.
 2. Open the application in a browser and follow the first-run steps to create the institution and initial Administrator account.
-3. Start or stop the application using simple Windows scripts or shortcuts.
-4. Open the displayed local address on the host computer or use the LAN address from an authorized device on the same network.
-5. Configure daily, weekly, or monthly backups and use the documented restore process if needed.
+3. Start or stop the application using the provided Windows scripts (`start.ps1` and `stop.ps1`).
+4. Access the application at `http://127.0.0.1:5000` on the host computer. Access from other devices on the same network will be supported after LAN configuration is implemented and verified in Phase 5.
+5. Configure daily, weekly, or monthly backups and use the documented restore process if needed. Backup scheduling and recovery workflows remain planned for a later phase.
 
-**Implementation status:** This is the target workflow, not yet a fully available installer. Follow the temporary developer instructions below only when setting up the current development version. As Sprint 4 phases are completed, this section will be updated with the verified user-facing steps.
+**Implementation status:** The setup script, browser-based first-run Administrator setup, and Phase 4 application lifecycle scripts (`start.ps1` and `stop.ps1`) are implemented. Runtime verification confirmed that the application starts successfully using Waitress, returns HTTP 200 at `http://127.0.0.1:5000`, prevents duplicate managed instances, and shuts down successfully. Database row counts remained unchanged across a start/stop cycle. The persistent user-level `SECRET_KEY` is configured and loaded by the start script without printing or replacing it.
+
+**Current limitations:** The application is currently configured for access on the host computer only. LAN access from another device, scheduled backups, and automated recovery remain to be implemented and verified. Refer to [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for the current implementation status and remaining work.
 
 ### Temporary developer setup (until automated setup is ready)
 
-These steps are for project development and verification, not the intended final end-user experience.
+These steps are for project development and verification, not the intended final end-user experience. The managed start/stop workflow is the recommended way to run the verified local application.
 
 #### Install dependencies
 
@@ -136,7 +148,9 @@ $env:SECRET_KEY = $key
 Remove-Variable key
 ```
 
-This preserves an existing user-level key and creates one only if it is missing. A newly opened terminal may load the persistent variable automatically; an already-open terminal may need the value loaded into its session. Never print, commit, or share the key. Keep the same key across restarts.
+The script above preserves an existing user-level key and generates one only if it is missing. The `start.ps1` script loads the existing key from the current process environment or falls back to the Windows user-level environment variable. It does not print or replace the key.
+
+When using the Flask development server or another manual startup command, ensure that `SECRET_KEY` is available in that PowerShell session. Never print, commit, or share the key, and keep it consistent across restarts.
 
 #### Initialize the database
 
@@ -150,13 +164,29 @@ Follow the prompts to enter institution details and initial Administrator accoun
 
 #### Start the application for local development
 
+Use the managed lifecycle scripts for normal local use:
+
+```powershell
+.\start.ps1
+```
+
+Open `http://127.0.0.1:5000` in a browser. To stop the application, open another PowerShell session in the project root if needed and run:
+
+```powershell
+.\stop.ps1
+```
+
+For development-only debugging, the Flask development server can be used instead:
+
 ```powershell
 python -m flask --app app:create_app run --debug
 ```
 
-Open `http://127.0.0.1:5000` in a browser. The Flask debug server is for local development only; do not expose it for shared/LAN access.
+Open `http://127.0.0.1:5000` in a browser. The Flask debug server is for local development only; do not expose it for shared/LAN access. Do not run the Flask development server and the managed Waitress instance on the same port at the same time.
 
-#### Shared/LAN testing
+#### Shared/LAN testing (developer-only procedure)
+
+> This manual command is for LAN experimentation and is separate from the verified `start.ps1` workflow. The managed application currently binds to `127.0.0.1:5000`; the Phase 5 LAN workflow has not yet been implemented and verified.
 
 For trusted local-network testing, use Waitress instead of the Flask development server. Make sure `SECRET_KEY` is available in the PowerShell session.
 
@@ -232,7 +262,7 @@ Replace `PATH_TO_RESTORED_DB` with the actual restored database path. For a stro
 python -m pytest -q
 ```
 
-The latest recorded full test suite passed 39 tests. Run the command above to check the current working copy.
+The latest recorded full test suite passed **52 tests**. Run the command above to verify the current working copy.
 
 ### Security and data protection
 
@@ -245,7 +275,7 @@ The latest recorded full test suite passed 39 tests. Run the command above to ch
 
 ## Project Status
 
-**Current milestone:** Authentication, authorization, educator management, shared page styling, and regression testing have been implemented. The latest recorded full test suite passed 39 tests.
+**Current milestone:** Authentication, authorization, educator management, shared page styling, and Phase 4 application lifecycle scripts have been implemented. The setup script and browser-based first-run Administrator setup are also available. Phase 4 runtime verification confirmed successful Waitress startup, HTTP 200 at `http://127.0.0.1:5000`, duplicate-start prevention, successful shutdown, and unchanged database row counts across a start/stop cycle. LAN access from other devices and scheduled backup/recovery workflows remain outstanding. See [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for phase-by-phase status.
 
 **Remaining Sprint 3 closure work:** Verify network portability on another trusted network and verify access restrictions on the external database backup before using real institutional data. Logout controls for future authenticated pages remain deferred until those pages are implemented.
 

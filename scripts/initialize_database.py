@@ -1,4 +1,4 @@
-from getpass import getpass
+﻿from getpass import getpass
 # from uuid import uuid4
 
 from werkzeug.security import generate_password_hash
@@ -14,9 +14,25 @@ def main():
         print("EduAnalytics - Initial Database Setup")
         print("-------------------------------------")
 
+        if User.query.filter_by(role="admin").first():
+            print(
+                "Initial setup is already complete: "
+                "an Admin account exists."
+            )
+            print("No changes were made to the database.")
+            return
+
+        if User.query.first():
+            print(
+                "Initial setup cannot continue: "
+                "existing user accounts were found."
+            )
+            print("No changes were made to the database.")
+            return
+
         institution_name = input("Institution name: ").strip()
         if not institution_name:
-            print("Error: Institution name canno be empty.")
+            print("Error: Institution name cannot be empty.")
             return
 
         userid = input("Admin user ID: ").strip()
@@ -36,7 +52,7 @@ def main():
 
         existing_user = User.query.filter_by(email=admin_email).first()
         if existing_user:
-            print("An account with this email alreadt exists.")
+            print("An account with this email already exists.")
             return
 
         first_name = input("Admin first name: ").strip()

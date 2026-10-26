@@ -48,9 +48,11 @@ def create_app(test_config=None):
     from app import models  # Register the models with SQLAlchemy
     from app.auth import auth_bp
     from app.admin import admin_bp
+    from app.setup import setup_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(setup_bp)
 
     with app.app_context():
         db.create_all()
