@@ -1,10 +1,10 @@
-# EduAnalytics
+﻿# EduAnalytics
 
 **Student Academic Performance Analytics Platform**
 
-EduAnalytics is a BCD586 mini project designed to help teachers and administrators explore student academic performance using interactive dashboards and data analytics.
+EduAnalytics is a BCD586 mini project designed to help teachers and administrators explore student academic performance using data management, analytics, and interactive dashboards.
 
-The project is being developed incrementally, with an emphasis on data management, meaningful visualizations, and a maintainable Flask application.
+The project is being developed incrementally, with an emphasis on structured data, meaningful visualizations, and a maintainable Flask application.
 
 ## Project Objectives
 
@@ -19,50 +19,55 @@ The project is being developed incrementally, with an emphasis on data managemen
 ### Implemented
 
 - **Authentication:** Administrator and educator login with password-hash verification.
-- **Educator Management:** Administrator-controlled educator account creation, activation, and deactivation.
-- **Access Control:** Role-based protection for administrator routes and rejection of inactive accounts.
-- **Setup and Deployment:** Windows setup script (`setup.ps1`), browser-based first-run Administrator setup, and application start/stop scripts (`start.ps1` and `stop.ps1`).
+- **Educator management:** Administrator-controlled educator account creation, activation, and deactivation.
+- **Access control:** Role-based protection for administrator routes and rejection of inactive accounts.
+- **Setup and deployment:** Windows setup script (`setup.ps1`), browser-based first-run Administrator setup, and application start/stop scripts (`start.ps1` and `stop.ps1`).
+- **Application lifecycle:** Waitress-based startup, duplicate-instance prevention, and managed shutdown.
 - **Security:** CSRF protection and persistent application secret-key handling.
+- **Manual database backup and recovery:** Timestamped SQLite backups, integrity verification, and an interactive recovery workflow with safety-backup and rollback protections.
+- **Local-network testing:** Optional LAN binding and automatic display of the detected LAN URL.
 
 ### Planned
 
-- **CSV Data Import:** Upload, preview, validate, and import student data.
-- **Analytics Dashboard:** Summary statistics, charts, filters, and group comparisons.
-- **Data Export:** Export filtered records as CSV.
-- **Import History:** Track dataset imports.
+- **CSV data import:** Upload, preview, validate, and import student data.
+- **Analytics dashboard:** Summary statistics, charts, filters, and group comparisons.
+- **Data export:** Export filtered records as CSV.
+- **Import history:** Track dataset imports.
 
 > EduAnalytics is under active development. Features listed as planned are not yet available as completed functionality.
 
 ## Technology Stack
 
 - **Backend:** Python, Flask
-- **Data Analysis:** Pandas, NumPy
+- **Data analysis:** Pandas, NumPy
 - **Database:** SQLite, Flask-SQLAlchemy
 - **Authentication:** Flask-Login, Werkzeug
 - **Frontend:** HTML, CSS, Bootstrap 5, JavaScript
 - **Charts:** Plotly.js
 - **Testing:** pytest
-- **Version Control:** Git and GitHub
+- **Version control:** Git and GitHub
 
 ## Current Implementation
 
 The following components have been implemented:
 
 - Flask application factory and application configuration.
-- SQLAlchemy database models for institutions, users, datasets, student records, and upload errors.
-- Database relationships and SQLite foreign-key enforcement.
-- Initial database setup and browser-based first-run flow for creating the institution and initial Administrator account.
-- Authentication, login, password-hash verification, session handling, and logout.
+- SQLAlchemy models and relationships for institutions, users, datasets, student records, and upload errors.
+- SQLite foreign-key enforcement and safe database initialization.
+- Browser-based first-run setup for creating the institution and initial Administrator account.
+- Authentication, password-hash verification, session handling, and logout.
 - Rejection of inactive accounts and role-based protection for administrator routes.
 - Administrator-controlled educator account creation, activation, and deactivation.
 - CSRF protection for forms and state-changing requests.
 - Shared home-page template and extracted CSS for the home and educator-management pages.
-- Windows setup script (`setup.ps1`) and application lifecycle scripts (`start.ps1` and `stop.ps1`).
-- Waitress-based local startup, duplicate-instance prevention, and managed application shutdown.
+- Windows setup script (`setup.ps1`) and lifecycle scripts (`start.ps1` and `stop.ps1`).
+- Waitress-based startup, duplicate-instance prevention, and managed shutdown.
 - Persistent user-level `SECRET_KEY` loading by the start script without printing or replacing the key.
-- Automated regression tests for authentication, authorization, educator management, and database behavior.
+- Configurable LAN binding through `EDUANALYTICS_HOST` and automatic LAN URL display when LAN mode is enabled.
+- Manual SQLite backup and interactive recovery scripts, with automated tests for recovery and rollback scenarios.
+- Automated regression tests for authentication, authorization, educator management, setup, and database behavior.
 
-The latest recorded full automated test suite passed **52 tests**. See the Sprint 3 documentation for regression-test evidence and outstanding tasks. Run the test suite again to verify the current working copy.
+The latest verified full automated test suite passed **66 tests in 10.74 seconds** on 2026-10-28. The restore-specific suite passed **10 tests in 1.12 seconds**. An isolated clean-copy walkthrough also passed: setup created a new virtual environment, the setup page returned HTTP 200, managed startup returned HTTP 200, and shutdown completed with no listener remaining on port 5000. This walkthrough used the same Windows user; a separate-user or separate-machine walkthrough has not been completed. See [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for detailed evidence and remaining verification work.
 
 CSV import, academic analytics dashboards, charts, filtering, and data export remain planned features.
 
@@ -82,13 +87,13 @@ In the selected UCI dataset, grades are recorded on a scale from 0 to 20. The `s
 
 ## Project Documentation
 
-- [MVP Scope and Requirements Specification](docs/MVP_Scope_and_Requirements.md) — Defines the approved features, technology stack, dataset, development plan, team responsibilities, and acceptance criteria.
-- [Sprint 3 — Authentication and Educator Account Management](docs/Sprint_3_Authentication.md) — Documents authentication and authorization implementation, educator management, regression tests, manual verification, database backup restoration, and remaining closure actions.
-- [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) — Tracks setup automation, first-run configuration, application lifecycle scripts, LAN access, backup/recovery, and verification status.
+- [MVP Scope and Requirements Specification](docs/MVP_Scope_and_Requirements.md) — Approved features, technology stack, dataset, development plan, team responsibilities, and acceptance criteria.
+- [Sprint 3 — Authentication and Educator Account Management](docs/Sprint_3_Authentication.md) — Authentication and authorization implementation, educator management, regression tests, manual verification, and related closure notes.
+- [Sprint 4 — Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) — Setup automation, first-run configuration, lifecycle scripts, LAN access, manual backup/recovery, verification evidence, and outstanding limitations.
 
 ## Setup and Deployment
 
-> **Sprint 4 is in progress.** The Windows setup script (`setup.ps1`), browser-based first-run Administrator setup, and application lifecycle scripts (`start.ps1` and `stop.ps1`) are implemented. Localhost lifecycle checks passed, and configurable LAN binding and sign-in-page access from a second device on the same Wi-Fi have been verified. The persistent user-level `SECRET_KEY` is loaded by the start script without printing or replacing it. Displaying the actual LAN URL at startup and scheduled backup/recovery workflows remain outstanding. See [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for phase details and remaining work.
+> **Sprint 4 closure decision: implementation and verification are complete for the agreed project scope, with limitations recorded.** Setup, first-run configuration, lifecycle scripts, LAN access, and manual database backup/recovery are implemented and tested. The latest full suite passed 66 tests in 10.74 seconds on 2026-10-28; all 10 restore-specific tests passed in the focused run. A live database restore and post-restore application check also passed. Existing backup-folder permissions are accepted for the current personal development PC because the listed local accounts are trusted; effective access for every account and access path has not been exhaustively verified. Separate-user/machine, cross-network, and production deployment checks remain outstanding. Automated backup scheduling is intentionally deferred.
 
 ### Prerequisites
 
@@ -110,19 +115,19 @@ cd EduAnalytics
 
 The intended end-user workflow is:
 
-1. Run the setup script (`setup.ps1`) to check prerequisites, install dependencies, configure the secret key, and initialize the database safely.
+1. Open PowerShell in the project root and run `.\setup.ps1`.
 2. Open the application in a browser and follow the first-run steps to create the institution and initial Administrator account.
-3. Start or stop the application using the provided Windows scripts (`start.ps1` and `stop.ps1`).
-4. By default, access the application at `http://127.0.0.1:5000` on the host computer. For trusted same-Wi-Fi LAN testing, see [LAN access](#lan-access-on-a-trusted-local-network) below.
-5. Scheduled backups and recovery workflows are not implemented yet; see the Sprint 4 document for status.
+3. Start or stop the application using `.\start.ps1` and `.\stop.ps1`.
+4. By default, access the application at `http://127.0.0.1:5000` on the host computer. For trusted same-network LAN testing, follow [LAN access](#lan-access-on-a-trusted-local-network).
+5. Create manual database backups with `python .\scripts\backup_database.py`. Use `python .\scripts\restore_database.py` for the interactive recovery procedure when needed. Automated backup scheduling is not implemented.
 
-**Implementation status:** The managed scripts use Waitress, default to localhost, and support an optional `EDUANALYTICS_HOST` override. Localhost lifecycle checks passed; LAN binding and second-device sign-in-page access were also verified on one Wi-Fi network.
+**Implementation status:** The managed scripts use Waitress, default to localhost, and support an optional `EDUANALYTICS_HOST` override. Localhost lifecycle checks passed; LAN binding and second-device sign-in-page access were verified on one Wi-Fi network.
 
-**Current limitations:** The start script does not yet display the actual LAN URL automatically. LAN access on other networks, production deployment, scheduled backups, and automated recovery have not been verified or completed. Refer to [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for current status.
+**Current limitations:** Access on other networks and production deployment have not been verified. Manual backup and interactive recovery passed automated tests using disposable databases, including simulated failure and rollback scenarios. A live restore was also performed: the database passed integrity checks, the application returned HTTP 200 after recovery, and the safety backup and rollback file passed SQLite integrity checks. The backup folder's ACL entries were inspected and the existing permissions are accepted for this personal development PC because the listed local accounts are trusted. Effective access for every account and access path has not been exhaustively verified; review this before using real institutional data. Automated backup scheduling is intentionally deferred. Refer to [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for current status.
 
 ### LAN access on a trusted local network
 
-LAN access is optional. The default is **localhost only**, which means the app is available on the host computer at `http://127.0.0.1:5000`.
+LAN access is optional. The default is **localhost only**, meaning the app is available on the host computer at `http://127.0.0.1:5000`.
 
 To test access from another authorized device on the **same trusted Wi-Fi or wired LAN**, open PowerShell in the project root on the host computer and run:
 
@@ -146,7 +151,7 @@ Get-NetIPConfiguration |
 
 Choose the IPv4 address for the active Wi-Fi or Ethernet adapter. On the tested network, the host address was `192.168.1.20`; that address is only an example and may differ on your network. On the second device, open `http://<HOST-PC-IP>:5000`, replacing `<HOST-PC-IP>` with the host's actual private IPv4 address.
 
-Both devices must be on the same network, and network/router client isolation or Windows Firewall rules may block connections. Do **not** disable the firewall. If Windows asks about network access, allow only the appropriate trusted private-network scope after reviewing the prompt; do not create broad inbound access unnecessarily. No firewall rules are added automatically by the project.
+Both devices must be on the same network, and network/router client isolation or Windows Firewall rules may block connections. **Do not disable the firewall.** If Windows asks about network access, allow only the appropriate trusted private-network scope after reviewing the prompt. No firewall rules are added automatically by the project.
 
 `0.0.0.0` is the server's listening address, not the URL to enter in a browser. To return to localhost-only mode, stop the server and clear the temporary override in the same PowerShell session:
 
@@ -155,11 +160,11 @@ Both devices must be on the same network, and network/router client isolation or
 Remove-Item Env:EDUANALYTICS_HOST -ErrorAction SilentlyContinue
 ```
 
-The override above applies only to the current PowerShell process. The next start defaults to localhost unless `EDUANALYTICS_HOST` is set again. The managed start script does not yet display the actual LAN URL automatically. A host's private IP can change when reconnecting or moving to another network. This procedure is for trusted LAN testing, not internet-facing or production deployment.
+The override applies only to the current PowerShell process. The next start defaults to localhost unless `EDUANALYTICS_HOST` is set again. When LAN binding is enabled, the managed start script displays the detected LAN URL automatically. A host's private IP can change when reconnecting or moving to another network. This procedure is for trusted LAN testing, not internet-facing or production deployment.
 
-### Temporary developer setup (until automated setup is ready)
+### Developer setup (manual workflow)
 
-These steps are for project development and verification, not the intended final end-user experience. The managed start/stop workflow is the recommended way to run the verified local application.
+These steps are for project development and verification, not the intended final end-user experience. The managed start/stop workflow is recommended for normal local use.
 
 #### Install dependencies
 
@@ -173,7 +178,7 @@ python -m pip install -r requirements.txt
 
 #### Configure the secret key
 
-EduAnalytics requires a persistent `SECRET_KEY`. The application will not start if the current process cannot access it. Run this block once in PowerShell if a user-level key has not already been configured:
+EduAnalytics requires a persistent `SECRET_KEY`. The application will not start if the current process cannot access it. The setup script configures the key. If you need to configure it manually for development, run this block only if a user-level key has not already been configured:
 
 ```powershell
 $key = [Environment]::GetEnvironmentVariable("SECRET_KEY", "User")
@@ -185,7 +190,7 @@ $env:SECRET_KEY = $key
 Remove-Variable key
 ```
 
-The script above preserves an existing user-level key and generates one only if it is missing. The `start.ps1` script loads the existing key from the current process environment or falls back to the Windows user-level environment variable. It does not print or replace the key.
+The script preserves an existing user-level key and generates one only if it is missing. The `start.ps1` script loads the existing key from the current process environment or falls back to the Windows user-level environment variable. It does not print or replace the key.
 
 When using the Flask development server or another manual startup command, ensure that `SECRET_KEY` is available in that PowerShell session. Never print, commit, or share the key, and keep it consistent across restarts.
 
@@ -207,7 +212,7 @@ Use the managed lifecycle scripts for normal local use:
 .\start.ps1
 ```
 
-Open `http://127.0.0.1:5000` in a browser. To stop the application, open another PowerShell session in the project root if needed and run:
+Open `http://127.0.0.1:5000` in a browser. To stop the application, run:
 
 ```powershell
 .\stop.ps1
@@ -223,7 +228,7 @@ Open `http://127.0.0.1:5000` in a browser. The Flask debug server is for local d
 
 #### Shared/LAN testing (developer-only procedure)
 
-> This manual command is for LAN experimentation and is separate from the verified `start.ps1` workflow. The managed application currently binds to `127.0.0.1:5000`; the Phase 5 LAN workflow has not yet been implemented and verified.
+> This is an optional manual procedure for LAN experimentation. The recommended managed workflow supports LAN binding through `EDUANALYTICS_HOST` and displays the detected LAN URL at startup. See the trusted LAN access instructions above.
 
 For trusted local-network testing, use Waitress instead of the Flask development server. Make sure `SECRET_KEY` is available in the PowerShell session.
 
@@ -239,59 +244,38 @@ For trusted local-network testing, use Waitress instead of the Flask development
 
 Do not disable the firewall to make this work. Review firewall and network policies for the intended access scope. The host IP may change after reconnecting. This is for trusted LAN testing, not production deployment.
 
-#### Manual database backup and restore (developer procedure)
+#### Manual database backup and recovery
 
-Backups must be stored outside the repository and protected from unauthorized access. The application's SQLite database is normally `instance\eduanalytics.db`.
+EduAnalytics supports manual database backups and an interactive recovery procedure. Backups are stored outside the repository by default, in `..\EduAnalytics_Backups`. The live SQLite database is normally `instance\eduanalytics.db`.
 
-Create a backup folder outside the repository:
+**Create a backup**
 
-```powershell
-New-Item -ItemType Directory -Force "..\EduAnalytics_Backups"
-```
-
-Use SQLite's backup API to create a consistent copy and verify its integrity:
+Run this command from the project root in PowerShell:
 
 ```powershell
-@'
-import sqlite3
-from datetime import datetime
-from pathlib import Path
-
-source = Path("instance/eduanalytics.db")
-backup_dir = Path("..") / "EduAnalytics_Backups"
-backup_dir.mkdir(parents=True, exist_ok=True)
-
-if not source.is_file():
-    raise SystemExit(f"Database not found: {source}")
-
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-destination = backup_dir / f"eduanalytics_{timestamp}.db"
-
-try:
-    with sqlite3.connect(source) as original:
-        with sqlite3.connect(destination) as backup:
-            original.backup(backup)
-            result = backup.execute("PRAGMA integrity_check").fetchone()[0]
-
-    if result != "ok":
-        destination.unlink(missing_ok=True)
-        raise SystemExit(f"Backup integrity check failed: {result}")
-
-    print(f"Backup created: {destination}")
-    print(f"Integrity check: {result}")
-except Exception:
-    destination.unlink(missing_ok=True)
-    raise
-'@ | python -
+python .\scripts\backup_database.py
 ```
 
-The expected integrity result is `ok`. To test a restore, restore the backup to a separate test location first; do not overwrite the active database during a restoration test. Check the restored copy with SQLite:
+The script creates a timestamped `.db` backup, labels it with the institution name, and verifies database integrity. Review the success message. The backup folder's effective access restrictions have not yet been fully verified; do not use real institutional data until access has been reviewed and verified.
 
-```powershell
-python -c "import sqlite3; c=sqlite3.connect('file:PATH_TO_RESTORED_DB?mode=ro', uri=True); print(c.execute('PRAGMA integrity_check').fetchone()[0]); c.close()"
-```
+**Recover from a backup**
 
-Replace `PATH_TO_RESTORED_DB` with the actual restored database path. For a stronger test, verify expected tables and records and check that the application can use a disposable copy. Automated daily, weekly, and monthly backup scheduling is not yet implemented.
+1. Stop EduAnalytics using `.\stop.ps1`.
+2. Close any other process that might be using the database.
+3. Run:
+
+   ```powershell
+   python .\scripts\restore_database.py
+   ```
+
+4. Select the listed backup by number. Check the institution, date, and filename.
+5. Type `RESTORE` only if you intend to replace the current live database. Enter `Q` at the selection prompt to cancel.
+
+The recovery script validates the selected backup, creates a safety backup of the current database, prepares a replacement, and checks its integrity. It retains the previous database as a rollback file after a successful replacement. Restart the application with `.\start.ps1` after successful recovery.
+
+**Important:** Recovery replaces the live database with the selected snapshot. Changes made after that snapshot may be lost. Do not delete safety backups or rollback files until the recovered application and its data have been checked. If recovery reports an error, read the full message and investigate before retrying.
+
+The restore test suite passed **10 tests**, covering successful recovery, safety-copy retention, rollback after a simulated post-restore verification failure, and handling of a simulated rollback-replacement failure. A live restore was also performed on 2026-10-27; the recovered database passed integrity checks, the application returned HTTP 200 after recovery, and both the safety backup and retained rollback file passed integrity checks. The backup folder's ACL entries were inspected with `icacls`; no permission changes were made, and the output alone does not establish all effective access paths. Automated daily, weekly, and monthly scheduling is intentionally deferred.
 
 #### Run automated tests
 
@@ -299,7 +283,7 @@ Replace `PATH_TO_RESTORED_DB` with the actual restored database path. For a stro
 python -m pytest -q
 ```
 
-The latest recorded full test suite passed **52 tests**. Run the command above to verify the current working copy.
+Latest verified result (2026-10-28): **66 passed in 10.74 seconds**. Restore-specific result: **10 passed in 1.12 seconds**. A separate clean-copy test suite also passed 66 tests in 23.59 seconds on 2026-10-28.
 
 ### Security and data protection
 
@@ -308,13 +292,13 @@ The latest recorded full test suite passed **52 tests**. Run the command above t
 - Setup must not replace an existing secret key or delete/reset an existing database during ordinary reruns.
 - Do not expose Flask debug mode on a LAN.
 - Initial setup must be protected against unauthorized reuse after completion.
-- Do not use real institutional data until storage location and access permissions have been reviewed.
+- Do not use real institutional data in the backup location until its storage and effective access restrictions have been reviewed and verified.
 
 ## Project Status
 
-**Current milestone:** Authentication, authorization, educator management, setup, first-run Administrator setup, and lifecycle scripts are implemented. Localhost lifecycle checks passed, and same-network LAN binding and sign-in-page access from a second device have been verified. Automatic LAN URL display, scheduled backup/recovery, and cross-network/production deployment verification remain outstanding. See [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for phase-by-phase status.
+**Current milestone:** Authentication, authorization, educator management, setup, first-run Administrator setup, lifecycle scripts, LAN access guidance, and manual database backup and recovery are implemented. Localhost lifecycle checks and same-network LAN access have been verified. The full automated suite passed 66 tests, all 10 restore-specific tests passed, and the isolated clean-copy setup walkthrough passed under the current Windows user. A live-database restore, post-restore application startup (HTTP 200), and safety/rollback integrity checks also passed.
 
-**Remaining Sprint 3 closure work:** Verify network portability on another trusted network and verify access restrictions on the external database backup before using real institutional data. Logout controls for future authenticated pages remain deferred until those pages are implemented.
+**Closure decision and limitations:** Sprint 4 implementation and verification are complete for the agreed project scope. Existing backup-folder permissions are accepted for this personal development PC because the listed local accounts are trusted, but effective access for every account and access path has not been exhaustively verified. Separate-user/machine setup, access on another network, and production deployment remain unverified. Automated backup scheduling is intentionally deferred. Do not use real institutional data until backup storage and access controls have been appropriately reviewed. See [Sprint 4: Setup and Deployment](docs/Sprint_4_Setup_Deployment.md) for the detailed acceptance checklist and evidence.
 
 **Next development milestone:** CSV upload and preview, academic-record validation and import, followed by performance summaries, visualizations, filtering, and data export.
 
