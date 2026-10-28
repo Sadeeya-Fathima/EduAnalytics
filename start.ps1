@@ -3,14 +3,7 @@ $ErrorActionPreference = "Stop"
 
 $ProjectRoot = $PSScriptRoot
 
-$ListenHost = [Environment]::GetEnvironmentVariable(
-    "EDUANALYTICS_HOST",
-    "Process"
-)
-
-if ([string]::IsNullOrWhiteSpace($ListenHost)) {
-    $ListenHost = "127.0.0.1"
-}
+$ListenHost = "0.0.0.0"
 
 $ListenPort = 5000
 $VenvPython = Join-Path $ProjectRoot ".venv\Scripts\python.exe"
