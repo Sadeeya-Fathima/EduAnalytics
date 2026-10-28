@@ -71,17 +71,22 @@ From the project root, run:
 
 Follow any prompts shown by the script. The setup script prepares the local development environment and configures the application secret key. Do not share or commit secret keys, passwords, or local database files.
 
-### 3. Complete first-run setup
 
-1. Start the application:
+### 3. Start and access the application
+
+1. Start EduAnalytics from the project root:
 
    ```powershell
    .\start.ps1
    ```
 
-2. Open `http://127.0.0.1:5000` in your browser.
-3. Follow the setup page to create your institution and the initial Administrator account.
-4. After setup, sign in with the Administrator account you created.
+2. Follow the URL displayed by the script:
+   - **First-time setup:** Open `http://127.0.0.1:5000/setup/` to register your institution and create the initial Administrator account.
+   - **Setup already completed:** Open `http://127.0.0.1:5000/auth/login` to sign in with your existing account.
+
+3. After creating the initial Administrator account, sign in using the credentials you registered.
+
+The startup script checks whether first-run setup is complete and displays the appropriate link. If EduAnalytics is already running, it displays the appropriate link without starting another instance.
 
 Use the managed scripts for normal application use:
 
@@ -90,7 +95,9 @@ Use the managed scripts for normal application use:
 .\stop.ps1
 ```
 
-Run `.\stop.ps1` in a separate PowerShell window when needed. The default configuration listens on localhost, so the application is accessible only from the host computer.
+Run `.\stop.ps1` to stop the application before restarting it. If the application is already running, `.\start.ps1` will report this and display the appropriate setup or login link.
+
+By default, EduAnalytics listens on `127.0.0.1:5000` and is accessible only from the host computer. Access from other devices requires explicitly enabling LAN mode, as described in the LAN access section.
 
 ### 4. Create a database backup
 

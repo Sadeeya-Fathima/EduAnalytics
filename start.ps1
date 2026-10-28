@@ -18,6 +18,74 @@ $PidFile = Join-Path $ProjectRoot ".eduanalytics.pid"
 $LogFile = Join-Path $ProjectRoot "eduanalytics.log"
 $ErrorLogFile = Join-Path $ProjectRoot "eduanalytics.log.err"
 
+# Determine whether first-run setup is complete by checking /setup/.
+# Expected behavior: HTTP 200 means setup is available; HTTP 403
+# means setup has already been completed.
+function Get-SetupDestination {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$BaseUrl
+    )
+
+    try {
+        $Response = Invoke-WebRequest `
+            -Uri "$BaseUrl/setup/" `
+            -TimeoutSec 5 `
+            -UseBasicParsing `
+            -ErrorAction Stop
+
+        if ([int]$Response.StatusCode -eq 200) {
+            return "setup"
+        }
+
+        throw "Unexpected HTTP status $([int]$Response.StatusCode) from the setup page."
+    }
+    catch {
+        $StatusCode = $null
+
+        if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
+            $StatusCode = [int]$_.Exception.Response.StatusCode
+        }
+
+        if ($StatusCode -eq 403) {
+            return "login"
+        }
+
+        throw "Could not determine setup status at $BaseUrl/setup/. $($_.Exception.Message)"
+    }
+}
+
+# Display the appropriate next page without guessing if the check fails.
+function Show-NextPage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$BaseUrl
+    )
+
+    try {
+        $Destination = Get-SetupDestination -BaseUrl $BaseUrl
+
+        if ($Destination -eq "setup") {
+            Write-Host ""
+            Write-Host "First-run setup is not complete." -ForegroundColor Yellow
+            Write-Host "Register your institution and create the initial Administrator:"
+            Write-Host "$BaseUrl/setup/" -ForegroundColor Cyan
+        }
+        else {
+            Write-Host ""
+            Write-Host "EduAnalytics is already configured." -ForegroundColor Green
+            Write-Host "Open this page to sign in:"
+            Write-Host "$BaseUrl/auth/login" -ForegroundColor Cyan
+        }
+    }
+    catch {
+        Write-Host ""
+        Write-Host "[WARNING] The server is running, but setup status could not be determined." -ForegroundColor Yellow
+        Write-Host "Open $BaseUrl/ and check eduanalytics.log.err if necessary."
+        Write-Host "Details: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
+}
+
 try {
     Set-Location $ProjectRoot
 
@@ -27,10 +95,16 @@ try {
     }
 
     # 2. Load the existing persistent SECRET_KEY.
-    $SecretKey = [Environment]::GetEnvironmentVariable("SECRET_KEY", "Process")
+    $SecretKey = [Environment]::GetEnvironmentVariable(
+        "SECRET_KEY",
+        "Process"
+    )
 
     if ([string]::IsNullOrWhiteSpace($SecretKey)) {
-        $SecretKey = [Environment]::GetEnvironmentVariable("SECRET_KEY", "User")
+        $SecretKey = [Environment]::GetEnvironmentVariable(
+            "SECRET_KEY",
+            "User"
+        )
     }
 
     if ([string]::IsNullOrWhiteSpace($SecretKey)) {
@@ -56,7 +130,19 @@ try {
                     $ExistingProcess.ExecutablePath -eq $ExpectedPython -and
                     $ExistingProcess.CommandLine -match 'waitress'
                 ) {
-                    throw "EduAnalytics is already running (PID $ExistingPid). Use .\stop.ps1 before restarting."
+                    Write-Host "EduAnalytics is already running (PID $ExistingPid)." -ForegroundColor Yellow
+
+                    Show-NextPage -BaseUrl "http://127.0.0.1:$ListenPort"
+
+                    if ($ListenHost -eq "0.0.0.0") {
+                        Write-Host ""
+                        Write-Host "The server may also be accessible from authorized devices on your LAN."
+                        Write-Host "Use the host PC's private IP address and port $ListenPort."
+                    }
+
+                    Write-Host ""
+                    Write-Host "To stop: .\stop.ps1"
+                    return
                 }
 
                 throw "PID file points to another process. Nothing was stopped. Inspect .eduanalytics.pid before continuing."
@@ -81,7 +167,6 @@ try {
     Remove-Item $LogFile, $ErrorLogFile -Force -ErrorAction SilentlyContinue
 
     # 6. Start the Flask application through Waitress.
-    # Bind to localhost for Phase 4; LAN access can be configured in Phase 5.
     $Process = Start-Process `
         -FilePath $VenvPython `
         -ArgumentList @(
@@ -118,7 +203,12 @@ try {
         Write-Host "EduAnalytics started successfully." -ForegroundColor Green
         Write-Host "Local URL: http://127.0.0.1:$ListenPort/"
         Write-Host "Listening host: $ListenHost"
+        Write-Host "HTTP status: $([int]$Response.StatusCode)"
 
+        # Display the correct setup or login destination.
+        Show-NextPage -BaseUrl "http://127.0.0.1:$ListenPort"
+
+        # 8. Display LAN URLs when LAN binding is enabled.
         if ($ListenHost -eq "0.0.0.0") {
             $LanAddresses = @()
 
@@ -129,7 +219,9 @@ try {
                             $_.IPv4DefaultGateway -ne $null -and
                             $_.NetAdapter.Status -eq "Up"
                         } |
-                        ForEach-Object { $_.IPv4Address.IPAddress } |
+                        ForEach-Object {
+                            $_.IPv4Address.IPAddress
+                        } |
                         Where-Object {
                             $_ -and
                             $_ -notmatch '^127\.' -and
@@ -143,10 +235,16 @@ try {
             }
 
             if ($LanAddresses.Count -gt 0) {
+                Write-Host ""
                 Write-Host "LAN URL(s):" -ForegroundColor Cyan
 
                 foreach ($Address in $LanAddresses) {
-                    Write-Host "  http://${Address}:$ListenPort/"
+                    $LanBaseUrl = "http://${Address}:$ListenPort"
+
+                    Write-Host "$LanBaseUrl/"
+
+                    # Also display the correct page for LAN users.
+                    Show-NextPage -BaseUrl $LanBaseUrl
                 }
             }
             else {
@@ -156,16 +254,14 @@ try {
         elseif ($ListenHost -notin @("127.0.0.1", "localhost")) {
             Write-Host "Configured host URL: http://${ListenHost}:$ListenPort/"
         }
-
-        Write-Host "HTTP status: $([int]$Response.StatusCode)"
     }
     catch {
-        # The root route may redirect or require setup/login.
-        # A running process is not necessarily a failed startup.
+        # A running process does not guarantee that HTTP is responding.
         Write-Host "Waitress is running (PID $($Process.Id)), but the homepage check did not return a response." -ForegroundColor Yellow
         Write-Host "Review eduanalytics.log and eduanalytics.log.err if the app is inaccessible."
     }
 
+    Write-Host ""
     Write-Host "To stop: .\stop.ps1"
 }
 catch {

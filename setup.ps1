@@ -7,7 +7,8 @@ Write-Host "       EduAnalytics Setup Check       " -ForegroundColor Cyan
 Write-Host "======================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Check Python 3.12
+
+# Check Python 3.12 or higher
 try {
     $pythonVersion = & python --version 2>&1
 
@@ -15,18 +16,30 @@ try {
         throw "Python command failed"
     }
 
-    if ($pythonVersion -notmatch '^Python 3\.12(\.\d+)?$') {
-        Write-Host "[ERROR] Python 3.12 is required. Detected: $pythonVersion" -ForegroundColor Red
-        Write-Host "Install Python 3.12 and enable Add Python to PATH." -ForegroundColor Yellow
+    if ($pythonVersion -notmatch '^Python (\d+)\.(\d+)\.(\d+)$') {
+        Write-Host "[ERROR] Could not determine the Python version: $pythonVersion" -ForegroundColor Red
+        exit 1
+    }
+
+    $major = [int]$Matches[1]
+    $minor = [int]$Matches[2]
+
+    if (
+        $major -lt 3 -or
+        ($major -eq 3 -and $minor -lt 12)
+    ) {
+        Write-Host "[ERROR] Python 3.12 or higher is required. Detected: $pythonVersion" -ForegroundColor Red
+        Write-Host "Install Python 3.12 or higher and enable Add Python to PATH." -ForegroundColor Yellow
         exit 1
     }
 
     Write-Host "[OK] Python: $pythonVersion" -ForegroundColor Green
 }
 catch {
-    Write-Host "[ERROR] Python 3.12 was not found. Install Python 3.12 and enable Add Python to PATH." -ForegroundColor Red
+    Write-Host "[ERROR] Python was not found or could not be executed. Install Python 3.12 or higher and enable Add Python to PATH." -ForegroundColor Red
     exit 1
 }
+
 
 # Check Git
 try {
@@ -118,10 +131,21 @@ else {
     Write-Host "[OK] Existing persistent SECRET_KEY preserved." -ForegroundColor Green
 }
 
-# Make the key available to this PowerShell session
+# Make the key available to this PowerShell session so the app factory can run
 $env:SECRET_KEY = $secretKey
 Remove-Variable secretKey
 
+# Initialize the database schema safely. create_app() calls db.create_all(),
+# which creates missing tables without deleting existing tables or rows.
+Write-Host "Initializing the database and checking required tables..." -ForegroundColor Cyan
+& ".\.venv\Scripts\python.exe" -c "from app import create_app; create_app(); print('Database initialization completed; required tables are ready.')"
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "[ERROR] Database initialization failed. Review the Python error above before starting EduAnalytics." -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "[OK] Database initialized; existing database records were not reset." -ForegroundColor Green
 Write-Host ""
-Write-Host "Setup dependencies and secret-key configuration completed." -ForegroundColor Green
-Write-Host "Existing database contents were not changed."
+Write-Host "Setup completed successfully." -ForegroundColor Green
+Write-Host "Next: run .\start.ps1, then open http://127.0.0.1:5000/setup/ to register your institution and create the initial Administrator account."

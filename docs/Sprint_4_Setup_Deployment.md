@@ -278,6 +278,10 @@ The user-facing workflow should hide routine developer details behind scripts an
 - [x] Update the README with setup, startup, shutdown, LAN access, manual backup, and recovery instructions.
 - [x] Document known limitations and outstanding verification work.
 - [x] Perform a clean-copy setup walkthrough using the documented instructions (same Windows user; separate-user/machine verification remains outstanding).
+- [x] Delete the existing local database and rerun `setup.ps1`; setup reported successful database initialization.
+- [x] Verify the first startup displayed the first-run `/setup/` URL and returned HTTP 200.
+- [x] Verify a subsequent startup displayed `/auth/login` and returned HTTP 200 after the application reported setup was complete.
+- [x] Verify `stop.ps1` stopped the application successfully after each startup.
 - [x] Test successful recovery and rollback using disposable SQLite databases through automated recovery tests.
 - [x] Perform a live-database restore and verify post-restore application startup and recovery-artifact integrity.
 - [x] Restore the live database from a selected backup, then start the application and verify the homepage returned HTTP 200.
@@ -288,6 +292,7 @@ The user-facing workflow should hide routine developer details behind scripts an
 - [ ] Review the final implementation and documentation diffs in the local repository before committing.
 
 **Verification evidence**
+- Database-recreation walkthrough on 2026-10-28: after deleting `instance\eduanalytics.db`, `setup.ps1` completed successfully and reported that the database and required tables were initialized. The first startup displayed `http://127.0.0.1:5000/setup/` with HTTP 200; a subsequent startup displayed `http://127.0.0.1:5000/auth/login` with HTTP 200. `stop.ps1` stopped the application after both runs. This test used the current Windows user and Python 3.15.0. The provided logs do not independently document submission of the browser setup form.
 - Full automated test suite in the original project: `66 passed in 25.16s` on 2026-10-27.
 - Isolated clean-copy setup: `setup.ps1` completed successfully, created a new virtual environment, and installed dependencies while preserving the configured user-level `SECRET_KEY` without printing its value.
 - Isolated clean-copy test suite: `66 passed in 23.59s`.
@@ -323,6 +328,7 @@ Add a dated entry whenever a phase is implemented, tested, or deliberately defer
 | 2026-10-27 | Phases 6–7 | Fixed explicit SQLite connection closure in recovery tests and added isolated file-swap plus end-to-end success/rollback coverage. Reviewed backup-folder ACL entries without modifying them. | Restore suite: 10 passed in 1.12 seconds. Full original-project suite: 66 passed in 25.16 seconds. Live restore and recovery-artifact integrity checks passed. |
 | 2026-10-28 | Phase 7 | Completed an isolated clean-copy walkthrough using the documented setup and lifecycle scripts. | Setup succeeded and created a new virtual environment; isolated-copy suite: 66 passed in 23.59 seconds; `/setup/` returned HTTP 200; managed startup returned HTTP 200; shutdown succeeded and no listener remained on port 5000. This used the same Windows user; separate-user/machine verification and effective-permissions review remain open. |
 | 2026-10-28 | Sprint closure decision | Recorded the agreed scope and local backup-folder permission decision; updated current test evidence. | Latest full suite: 66 passed in 10.74 seconds; `git diff --check` reported no issues. Existing ACLs are accepted for the personal development PC because the listed local accounts are trusted. Effective access for every account/path, separate-user/machine setup, cross-network access, and production deployment remain unverified; automated scheduling is deferred. Final local diff/Git checks remain before commit. |
+| 2026-10-28 | Phase 7 | Tested first-run routing after deleting and recreating the local database. | `setup.ps1` reported successful initialization; first startup displayed `/setup/` with HTTP 200; subsequent startup displayed `/auth/login` with HTTP 200; shutdown succeeded after both runs. Browser form submission was not independently documented in the supplied logs. Separate-user/machine verification remains outstanding. |
 
 
 
