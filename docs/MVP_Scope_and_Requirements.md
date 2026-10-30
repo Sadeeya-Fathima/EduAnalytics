@@ -168,7 +168,19 @@ General-purpose support for arbitrary school spreadsheets is not required. Files
 
 **Expected outcome:** Only authorized users can access the appropriate application features.
 
-### Module 2 — CSV Upload and Validation
+### Module 2 — Database and Application Foundation
+
+1. Establish the Flask application structure using a modular, maintainable organization.
+2. Configure SQLite database integration using Flask-SQLAlchemy.
+3. Define the core database models, fields, and relationships for Users, Datasets, Student Records, and Upload Errors.
+4. Configure database initialization and table creation.
+5. Create reusable base templates and the shared application layout.
+6. Establish common navigation, static assets, and template inheritance.
+7. Configure essential application settings and database connectivity.
+
+**Expected outcome:** A working and maintainable application foundation with an initialized database, defined data relationships, and reusable base templates, ready for feature development. This foundation was completed as part of Sprint 2.
+
+### Module 3 — CSV Upload and Validation
 
 1. Upload academic data in CSV format.
 2. Preview the uploaded file before import.
@@ -182,7 +194,7 @@ General-purpose support for arbitrary school spreadsheets is not required. Files
 
 **Expected outcome:** Users can identify data issues before relying on dashboard results.
 
-### Module 3 — Dataset Management
+### Module 4 — Dataset Management
 
 1. Store imported datasets and their student records in SQLite.
 2. Display available datasets and basic upload metadata.
@@ -192,7 +204,7 @@ General-purpose support for arbitrary school spreadsheets is not required. Files
 
 **Expected outcome:** Users can identify which dataset is being analyzed and trace it to its upload.
 
-### Module 4 — Academic Analytics Dashboard
+### Module 5 — Academic Analytics Dashboard
 
 Provide summary statistics and interactive visualizations based on the selected dataset.
 
@@ -219,7 +231,7 @@ Provide summary statistics and interactive visualizations based on the selected 
 
 All statistics and charts must be derived from the selected dataset and active filters. Charts must use accurate labels, units, and legends where applicable.
 
-### Module 5 — Filtered Analytics Export
+### Module 6 — Filtered Analytics Export
 
 1. Export the records matching the current dashboard filters as a CSV file.
 2. Include the relevant column headers.
@@ -228,7 +240,7 @@ All statistics and charts must be derived from the selected dataset and active f
 
 The frozen MVP export format is **CSV**. PDF report generation and automated scheduled reports are not included.
 
-### Module 6 — Testing and Documentation
+### Module 7 — Testing and Documentation
 
 1. Test authentication and role permissions.
 2. Test CSV validation and import behaviour.
@@ -247,17 +259,18 @@ The frozen MVP export format is **CSV**. PDF report generation and automated sch
 | FR-01 | Users can log in and log out securely.                                                | Must     |
 | FR-02 | The system enforces administrator and teacher roles.                                  | Must     |
 | FR-03 | Administrators can create and activate teacher accounts.                              | Must     |
-| FR-04 | Authorized users can upload and preview CSV files.                                    | Must     |
-| FR-05 | The system validates the expected schema and record values.                           | Must     |
-| FR-06 | Users receive understandable validation and import feedback.                          | Must     |
-| FR-07 | Valid datasets and records are stored and selectable.                                 | Must     |
-| FR-08 | Users can view upload/import history.                                                 | Must     |
-| FR-09 | The dashboard calculates academic summary statistics.                                 | Must     |
-| FR-10 | The dashboard displays the specified charts and group comparisons.                    | Must     |
-| FR-11 | Dashboard filters update the displayed analytics.                                     | Must     |
-| FR-12 | Users can export filtered records as CSV.                                             | Must     |
-| FR-13 | The application handles expected errors without exposing sensitive technical details. | Must     |
-| FR-14 | The project includes tests and reproducible setup documentation.                      | Must     |
+| FR-04 | The application provides the configured Flask, SQLite, model, template, navigation, and database foundation. | Must     |
+| FR-05 | Authorized users can upload and preview CSV files.                                    | Must     |
+| FR-06 | The system validates the expected schema and record values.                           | Must     |
+| FR-07 | Users receive understandable validation and import feedback.                          | Must     |
+| FR-08 | Valid datasets and records are stored and selectable.                                 | Must     |
+| FR-09 | Users can view upload/import history.                                                 | Must     |
+| FR-10 | The dashboard calculates academic summary statistics.                                 | Must     |
+| FR-11 | The dashboard displays the specified charts and group comparisons.                    | Must     |
+| FR-12 | Dashboard filters update the displayed analytics.                                     | Must     |
+| FR-13 | Users can export filtered records as CSV.                                             | Must     |
+| FR-14 | The application handles expected errors without exposing sensitive technical details. | Must     |
+| FR-15 | The project includes tests and reproducible setup documentation.                      | Must     |
 
 ---
 
@@ -452,7 +465,16 @@ The MVP is considered complete only when the following criteria are demonstrated
 - [ ] A teacher cannot perform administrator-only actions.
 - [ ] Administrators can create and activate teacher accounts.
 
-### B. Upload and Validation
+### B. Database and Application Foundation
+
+- [x] The Flask application uses a modular structure with reusable templates.
+- [x] SQLite is configured through Flask-SQLAlchemy.
+- [x] Core Users, Datasets, Student Records, and Upload Errors models are defined with relationships where applicable.
+- [x] Database initialization and table creation are configured.
+- [x] Shared navigation, static assets, and template inheritance are available.
+- [x] Essential application settings and database connectivity are configured.
+
+### C. Upload and Validation
 
 - [x] A valid CSV matching the configured schema can be previewed and imported.
 - [x] A file missing a required column is rejected with a clear explanation.
@@ -460,14 +482,14 @@ The MVP is considered complete only when the following criteria are demonstrated
 - [x] Import failures do not silently create misleading partial datasets.
 - [x] Upload outcomes and relevant validation errors are recorded or displayed.
 
-### C. Dataset Management
+### D. Dataset Management
 
 - [ ] Imported datasets appear in the dataset list.
 - [ ] A user can select a dataset for analysis.
 - [ ] The dashboard uses the selected dataset rather than unrelated records.
 - [ ] Upload history shows sufficient information to identify each import.
 
-### D. Analytics
+### E. Analytics
 
 - [ ] The record count matches the valid records in the selected dataset.
 - [ ] Average, minimum, and maximum final grades match independently verified calculations.
@@ -477,14 +499,14 @@ The MVP is considered complete only when the following criteria are demonstrated
 - [ ] Empty results and missing data are handled without application crashes.
 - [ ] Chart titles, axes, and grade scale are understandable.
 
-### E. Export
+### F. Export
 
 - [ ] A user can export filtered records as a CSV file.
 - [ ] The export contains the expected headers and only the matching records.
 - [ ] Export results are consistent with the selected dataset and active filters.
 - [ ] The exported file opens in a standard spreadsheet application.
 
-### F. LAN Deployment and Multi-User Access
+### G. LAN Deployment and Multi-User Access
 
 - [ ] The application runs on one designated host PC and stores its database on that host.
 - [ ] An authorized user can access the application from a second computer on the same institution LAN using the host's LAN address.
@@ -493,7 +515,7 @@ The MVP is considered complete only when the following criteria are demonstrated
 - [ ] The host firewall permits only the intended LAN access, and the application is not exposed to the public internet.
 - [ ] The team documents that LAN access depends on the host PC and application remaining available.
 
-### G. Quality and Delivery
+### H. Quality and Delivery
 
 - [ ] Core authentication, validation, analytics, filter, and export tests pass.
 - [ ] The main workflow can be demonstrated from login through CSV upload, dashboard analysis, and export.
