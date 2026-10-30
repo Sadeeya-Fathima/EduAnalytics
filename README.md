@@ -202,10 +202,10 @@ From the project root, run:
 python -m pytest -v
 ```
 
-The latest recorded full test run passed **66 tests** on 2026-10-28. The
-restore-specific test suite passed **10 tests**. These are recorded
-verification results, not a guarantee that every deployment environment
-has been tested.
+The Sprint 5 regression evidence records **86 tests** passed across the
+grouped application suites, including **22 upload-workflow tests** and
+**10 restore-specific tests**. These are recorded verification results for
+the current development environment; rerun the suite after future changes.
 
 ### 7. Access from another device on the same network
 
@@ -269,15 +269,20 @@ rather than exact hours.
 
 ## Next Implementation
 
-Sprint 5 completed the core student-data workflow. The next development
-milestone is analytics:
+Sprint 5 completed the core student-data workflow. The next work follows
+the MVP specification's module boundaries:
 
-1.  **Academic performance summaries** --- calculate useful summaries
-    from imported records.
-2.  **Dashboard and visualizations** --- add charts, filters, and
-    student-group comparisons.
-3.  **CSV export and import history** --- allow filtered results to be
-    exported and keep a record of dataset imports.
+1.  **Dataset Management** --- list imported datasets, expose upload
+    metadata, support dataset selection, and maintain import history.
+2.  **Academic Analytics Dashboard** --- calculate verified summaries and
+    add charts, filters, and student-group comparisons for the selected
+    dataset.
+3.  **Filtered Analytics Export** --- export records matching the active
+    dataset and dashboard filters as CSV.
+
+When implementing analytics, preserve the distinction that UCI `studytime`
+values are categorical weekly-study ranges, not exact hours. They must not
+be treated as measured hours unless a separate source provides that unit.
 
 These features remain planned and are not yet implemented as completed
 functionality.
