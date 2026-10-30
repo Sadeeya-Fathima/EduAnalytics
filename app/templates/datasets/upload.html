@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Dataset | EduAnalytics{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css', v='5') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css', v='4') }}">
+{% endblock %}
+
+{% block content %}
+    <header class="dashboard-topbar upload-topbar">
+        <a class="dashboard-brand" href="{{ url_for('home') }}" aria-label="EduAnalytics dashboard">
+            <img src="{{ url_for('static', filename='branding/eduanalytics-emblem.png') }}"
+                 alt="" aria-hidden="true">
+            <span>Edu<strong>Analytics</strong></span>
+        </a>
+        <nav class="dashboard-nav" aria-label="Main navigation">
+            <a class="dashboard-nav-link" href="{{ url_for('home') }}">Dashboard</a>
+            <a class="dashboard-nav-link active" href="{{ url_for('datasets.upload') }}">Upload dataset</a>
+            {% if current_user.role == "admin" %}
+                <a class="dashboard-nav-link" href="{{ url_for('admin.educators') }}">Educator Management</a>
+            {% endif %}
+        </nav>
+        <div class="dashboard-userbar">
+            <div class="user-summary">
+                <span class="user-avatar" aria-hidden="true">{{ current_user.first_name[:1] }}{{ current_user.last_name[:1] }}</span>
+                <span class="user-details"><strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong><small>{{ current_user.role|capitalize }}</small></span>
+            </div>
+            <form method="POST" action="{{ url_for('auth.logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="logout-button" type="submit">Log out</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="dashboard-main upload-main">
+        <div class="upload-page-heading">
+            <div>
+                <p class="dashboard-eyebrow">Data management / Dataset import</p>
+                <h1>Import an academic dataset</h1>
+                <p class="dashboard-intro">
+                Configure the dataset details, define assessment labels, and prepare
+                a CSV for validation and analysis.
+                </p>
+            </div>
+            <span class="upload-status-pill">Secure import workflow</span>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages" aria-live="polite">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}" role="status">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% if not metadata and not import_result %}
+        <section class="card upload-step-card">
+            <div class="card-heading">
+                <h2>Define dataset details and grade labels</h2>
+                <p class="section-description">
+                    Labels control the CSV headers and preview. The database
+                    continues to use the stable fields g1, g2, and g3.
+                </p>
+            </div>
+
+            <form method="POST" action="{{ url_for('datasets.upload') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="dataset_name">Dataset name <span class="required-marker">*</span></label>
+                        <input type="text" id="dataset_name" name="dataset_name"
+                               maxlength="150" placeholder="e.g. Grade 10 Mathematics 2026"
+                               value="{{ metadata.name if metadata else '' }}" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="subject">Subject <span class="required-marker">*</span></label>
+                        <input type="text" id="subject" name="subject" maxlength="100"
+                               value="{{ metadata.subject if metadata else '' }}"
+                               placeholder="e.g. Mathematics" required>
+                    </div>
+                    <div class="field">
+                        <label for="department">Department</label>
+                        <input type="text" id="department" name="department" maxlength="100"
+                               value="{{ metadata.department if metadata and metadata.department else '' }}">
+                    </div>
+                    <div class="field">
+                        <label for="academic_year_choice">Academic year <span class="info-icon" tabindex="0" role="button" aria-label="Academic year help" data-tooltip="Use YYYY-YY, such as 2026-27. Custom and historical years are supported.">ⓘ</span></label>
+                        <select id="academic_year_choice" name="academic_year_choice">
+                            <option value="">Select an academic year</option>
+                            {% for year in ["2026-27", "2027-28", "2028-29", "2029-30"] %}
+                                <option value="{{ year }}" {% if metadata and metadata.academic_year == year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                            <option value="custom" {% if metadata and metadata.academic_year and metadata.academic_year not in ["2026-27", "2027-28", "2028-29", "2029-30"] %}selected{% endif %}>Enter a different academic year</option>
+                        </select>
+                        <input class="custom-year-input" type="text" id="academic_year_custom" name="academic_year_custom" maxlength="20" placeholder="e.g. 2020-21" {% if not metadata or not metadata.academic_year or metadata.academic_year in ["2026-27", "2027-28", "2028-29", "2029-30"] %}hidden{% endif %}>
+                    </div>
+
+                    <div class="field">
+                        <label for="class_section">Class, semester, or section</label>
+                        <input type="text" id="class_section" name="class_section"
+                               maxlength="100" value="{{ metadata.class_section if metadata and metadata.class_section else '' }}">
+                    </div>
+                    <div class="field">
+                        <label for="grade_scale_max">Maximum grade <span class="required-marker">*</span> <span class="info-icon" tabindex="0" role="button" aria-label="Maximum grade help" data-tooltip="The highest permitted grade in this dataset, such as 20 or 100.">ⓘ</span></label>
+                        <input type="number" id="grade_scale_max" name="grade_scale_max"
+                               min="1" step="1" value="{{ metadata.grade_scale_max if metadata else '' }}" placeholder="e.g. 100" required>
+                    </div>
+                    <div class="field">
+                        <label for="g1_label">G1 label <span class="info-icon" tabindex="0" role="button" aria-label="G1 label help" data-tooltip="Sets the CSV column name for the first assessment. Leave blank to exclude this column.">ⓘ</span></label>
+                        <input type="text" id="g1_label" name="g1_label" maxlength="100"
+                               value="{{ metadata.g1_label if metadata and metadata.g1_label else '' }}"
+                               placeholder="e.g. Internal 1">
+                    </div>
+                    <div class="field">
+                        <label for="g2_label">G2 label <span class="info-icon" tabindex="0" role="button" aria-label="G2 label help" data-tooltip="Sets the CSV column name for the second assessment. Leave blank to exclude this column.">ⓘ</span></label>
+                        <input type="text" id="g2_label" name="g2_label" maxlength="100"
+                               value="{{ metadata.g2_label if metadata and metadata.g2_label else '' }}"
+                               placeholder="e.g. Internal 2">
+                    </div>
+                    <div class="field field-wide">
+                        <label for="g3_label">G3 label <span class="required-marker">*</span> <span class="info-icon" tabindex="0" role="button" aria-label="G3 label help" data-tooltip="Sets the required primary or final-grade column name. Every student record must have a valid G3 grade.">ⓘ</span></label>
+                        <input type="text" id="g3_label" name="g3_label" maxlength="100"
+                               value="{{ metadata.g3_label if metadata else '' }}"
+                               placeholder="e.g. Final Exam" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="primary-button" type="submit">Generate CSV Structure</button>
+                </div>
+            </form>
+        </section>
+        {% endif %}
+
+        {% if import_result %}
+        <section class="card import-success-card" role="status">
+            <div class="import-success-icon" aria-hidden="true">✓</div>
+            <div>
+                <p class="dashboard-eyebrow">Import complete</p>
+                <h2>{{ import_result.dataset_name }}</h2>
+                <p class="section-description">
+                    {{ import_result.record_count }} student record(s) were saved successfully from
+                    <strong>{{ import_result.source_filename }}</strong>.
+                </p>
+                <div class="import-success-actions">
+                    <a class="workflow-button primary" href="{{ url_for('datasets.upload') }}">Import another dataset</a>
+                    <a class="workflow-button secondary" href="{{ url_for('home') }}">Return to dashboard</a>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        {% if metadata %}
+        <section class="card upload-workflow-card">
+            <form id="dataset-upload-form" method="POST" action="{{ url_for('datasets.upload_csv') }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% if upload_result and upload_result.import_token %}<input type="hidden" name="import_token" value="{{ upload_result.import_token }}">{% endif %}
+                <input class="visually-hidden-input" type="file" id="csv-file" name="csv_file" accept=".csv,text/csv" required>
+                <div class="workflow-toolbar">
+                    <div class="workflow-progress" aria-label="Import progress">
+                        <span class="progress-step current"><span class="progress-dot">1</span>Upload</span>
+                        <span class="progress-line"></span>
+                        <span class="progress-step"><span class="progress-dot">2</span>Verified</span>
+                        <span class="progress-line"></span>
+                        <span class="progress-step"><span class="progress-dot">3</span>Complete</span>
+                    </div>
+                    <div class="workflow-actions">
+                        <a class="workflow-button secondary" href="{{ url_for('datasets.edit_upload_details') }}">Edit</a>
+                        <a class="workflow-button secondary" href="{{ url_for('datasets.template') }}">Download CSV Template</a>
+                        {% if upload_result and not upload_result.valid %}
+                            <a class="workflow-button retry" href="{{ url_for('datasets.reset_upload_preview') }}">Retry</a>
+                        {% else %}
+                            <button class="workflow-button primary" type="button" id="select-file-button">Upload file</button>
+                        {% endif %}
+                        <button class="workflow-button confirm" type="submit" name="action" value="confirm" formnovalidate {% if not upload_result or not upload_result.valid %}disabled{% endif %} title="Confirm and import the validated records">Confirm</button>
+                    </div>
+                </div>
+
+                <div class="workflow-divider"></div>
+                {% if not upload_result %}
+                    <div class="table-wrapper preview-table-wrapper">
+                        <table>
+                            <thead><tr>{% for column, internal in columns %}<th scope="col">{% if internal in ['student_name', 'g1', 'g2', 'g3'] %}{{ column[:-2] }} <span class="required-marker">*</span>{% else %}{{ column }}{% endif %}</th>{% endfor %}</tr></thead>
+                            <tbody><tr>{% for column, internal in columns %}<td>{% if loop.first %}Example Student{% elif internal == 'g3' %}75{% elif internal in ['g1', 'g2'] %}80{% elif internal == 'studytime' %}5{% elif internal == 'absences' %}2{% endif %}</td>{% endfor %}</tr></tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+                {% if upload_result %}
+                    <div class="validation-result {{ 'valid' if upload_result.valid else 'invalid' }}" role="status">
+                        {% if upload_result.valid %}
+                            <strong>Validation passed.</strong> {{ upload_result.rows|length }} student record(s) are ready for confirmation.
+                        {% else %}
+                            <strong>Validation needs attention.</strong> Correct the issues below and upload the CSV again.
+                            {% if not upload_result.rows and upload_result.errors %}
+                                <ul class="file-validation-errors">
+                                    {% for error in upload_result.errors %}<li>{{ error }}</li>{% endfor %}
+                                </ul>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    {% if upload_result.rows %}
+                        <div class="table-wrapper data-preview-wrapper">
+                            <table>
+                                <thead><tr><th scope="col" class="exclude-column-heading"><label class="exclude-header"><input type="checkbox" id="exclude-all"> Do Not Upload</label></th>{% for column, internal in columns %}<th scope="col">{% if internal in ['student_name', 'g1', 'g2', 'g3'] %}{{ column[:-2] }} <span class="required-marker">*</span>{% else %}{{ column }}{% endif %}</th>{% endfor %}<th scope="col">Remarks</th></tr></thead>
+                                <tbody>
+                                    {% for row in upload_result.rows %}
+                                        <tr class="{{ 'has-row-error' if row._remarks else 'has-row-success' }}"><td class="exclude-cell"><input type="checkbox" name="exclude_rows" value="{{ row.row_number }}" class="exclude-row" aria-label="Do not upload row {{ row.row_number }}"></td>{% for column, internal in columns %}<td class="{{ 'invalid-cell' if internal in row._invalid_fields else '' }}">{{ row[internal] }}</td>{% endfor %}<td class="remarks-cell {{ 'error' if row._remarks else 'ready' }}">{% if row._remarks %}{% for remark in row._remarks %}{{ remark }}{% if not loop.last %}<br>{% endif %}{% endfor %}{% else %}Ready to import{% endif %}</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+            </form>
+        </section>
+        {% endif %}
+
+        <footer class="footer">EduAnalytics · Academic Performance Analytics</footer>
+    </main>
+    <script>
+        const academicYearChoice = document.getElementById("academic_year_choice");
+        const customYearInput = document.getElementById("academic_year_custom");
+        if (academicYearChoice && customYearInput) {
+            const syncAcademicYear = () => {
+                const custom = academicYearChoice.value === "custom";
+                customYearInput.hidden = !custom;
+                customYearInput.required = custom;
+            };
+            academicYearChoice.addEventListener("change", syncAcademicYear);
+            syncAcademicYear();
+        }
+        const csvInput = document.getElementById("csv-file");
+        const selectFileButton = document.getElementById("select-file-button");
+        const selectedFile = document.getElementById("selected-file");
+        if (selectFileButton && csvInput) {
+            selectFileButton.addEventListener("click", () => {
+                console.log("[EduAnalytics upload] Upload file button clicked");
+                csvInput.click();
+            });
+        }
+        if (csvInput) {
+            csvInput.addEventListener("change", () => {
+                console.log("[EduAnalytics upload] File change event fired", {
+                    fileCount: csvInput.files.length,
+                    fileName: csvInput.files.length ? csvInput.files[0].name : null,
+                    fileSize: csvInput.files.length ? csvInput.files[0].size : null,
+                    fileType: csvInput.files.length ? csvInput.files[0].type : null,
+                });
+                if (selectedFile) {
+                    selectedFile.textContent = csvInput.files.length
+                        ? csvInput.files[0].name
+                        : "No file selected";
+                }
+                if (csvInput.files.length) {
+                    console.log("[EduAnalytics upload] Submitting upload form");
+                    try {
+                        document.getElementById("dataset-upload-form").requestSubmit();
+                    } catch (error) {
+                        console.error("[EduAnalytics upload] Form submission failed", error);
+                    }
+                } else {
+                    console.warn("[EduAnalytics upload] No file selected");
+                }
+            });
+        }
+        const excludeAll = document.getElementById("exclude-all");
+        if (excludeAll) {
+            excludeAll.addEventListener("change", () => {
+                document.querySelectorAll(".exclude-row").forEach((checkbox) => {
+                    checkbox.checked = excludeAll.checked;
+                });
+            });
+        }
+    </script>
+{% endblock %}

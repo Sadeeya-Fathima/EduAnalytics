@@ -29,9 +29,20 @@ data, analytics, and interactive dashboards.
 -   LAN access by default for authorized devices on the same local
     network.
 
+### Implemented
+
+-   Guided CSV upload with dataset metadata and downloadable templates.
+-   Automatic CSV preview and validation with row-level errors and remarks.
+-   Dynamic teacher-defined assessment labels mapped to stable database fields.
+-   Per-row `Do Not Upload` exclusion and select-all controls.
+-   Transactional SQLite imports with rollback on failure.
+-   Server-side preview storage and one-time confirmation-token protection.
+-   File-type, encoding, delimiter, header, field-size, row-count, and 5 MiB
+    upload safeguards.
+-   Import success feedback with the imported dataset and record count.
+
 ### Planned
 
--   CSV upload, preview, validation, and import.
 -   Academic performance summaries and interactive dashboards.
 -   Charts, filters, and group comparisons.
 -   Export of filtered records as CSV.
@@ -242,16 +253,19 @@ Flask debug mode on a network.
 
 ## Dataset
 
-The project plans to use the UCI Student Performance dataset, focusing
-on either the mathematics or Portuguese language dataset.
+EduAnalytics supports both converted UCI-based datasets and institutional
+CSV datasets through the same configured template. Each dataset is imported
+and analyzed independently.
 
 Selected attributes include:
 
 -   `G1` --- First-period grade
 -   `G2` --- Second-period grade
 -   `G3` --- Final grade
--   `studytime` --- Weekly study-time category
--   `absences` --- Number of school absences
+-   `studytime` --- Study-time value supplied by the source; UCI category codes
+    are not interpreted as hours.
+-   `absences` --- Number of absences for the subject when the source unit is
+    known.
 
 In the selected UCI dataset, grades are recorded on a scale from 0 to
 20. The `studytime` attribute represents categories of weekly study time
@@ -259,21 +273,17 @@ rather than exact hours.
 
 ## Next Implementation
 
-The next development milestone is to implement the core student-data
-workflow in small, testable steps:
+Sprint 5 completed the core student-data workflow. The next development
+milestone is analytics:
 
-1.  **CSV upload and preview** --- allow an educator to upload a dataset
-    and inspect its rows before import.
-2.  **Data validation and import** --- validate required columns and
-    values, report invalid rows, and save valid student records.
-3.  **Academic performance summaries** --- calculate useful summaries
+1.  **Academic performance summaries** --- calculate useful summaries
     from imported records.
-4.  **Dashboard and visualizations** --- add charts, filters, and
+2.  **Dashboard and visualizations** --- add charts, filters, and
     student-group comparisons.
-5.  **CSV export and import history** --- allow filtered results to be
+3.  **CSV export and import history** --- allow filtered results to be
     exported and keep a record of dataset imports.
 
-These features are planned and are not yet implemented as completed
+These features remain planned and are not yet implemented as completed
 functionality.
 
 ## Project Documentation
@@ -288,6 +298,9 @@ functionality.
 -   [Sprint 4 --- Setup and
     Deployment](docs/Sprint_4_Setup_Deployment.md) --- detailed setup,
     lifecycle scripts, LAN access, backup and recovery, verification
+-   [Sprint 5 --- CSV Upload and Data
+    Validation](docs/Sprint_5_CSV_Upload_Data_Validation.md) --- completed
+    upload, validation, preview, exclusion, and transactional import workflow
     evidence, and known limitations.
 
 ## Current Status

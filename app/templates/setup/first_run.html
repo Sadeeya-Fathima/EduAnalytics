@@ -5,6 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Initial Setup | EduAnalytics</title>
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='branding/eduanalytics-emblem.png') }}">
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet"
@@ -15,6 +17,10 @@
     <section class="card shadow-sm border-0 rounded-4 p-4 mx-auto"
              style="max-width: 650px;">
         <div class="card-body">
+            <img src="{{ url_for('static', filename='branding/eduanalytics-logo.png') }}"
+                 class="img-fluid d-block mx-auto mb-3"
+                 style="max-height: 150px; object-fit: contain;"
+                 alt="EduAnalytics Student Analytics">
             <h1 class="h3 text-center mb-2">Welcome to EduAnalytics</h1>
             <p class="text-secondary text-center mb-4">
                 Set up your institution and create the initial Administrator account.

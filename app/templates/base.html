@@ -5,8 +5,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}EduAnalytics{% endblock %}</title>
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='branding/eduanalytics-emblem.png') }}">
     <link rel="stylesheet"
       href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css', v='4') }}">
     {% block head %}{% endblock %}
 </head>
 <body>

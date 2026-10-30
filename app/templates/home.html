@@ -1,16 +1,81 @@
 
 {% extends "base.html" %}
 
-{% block title %}EduAnalytics | Home{% endblock %}
+{% block title %}Dashboard | EduAnalytics{% endblock %}
 
 {% block content %}
-    <main>
-        <h1>EduAnalytics</h1>
-        <p>You are signed in to EduAnalytics.</p>
+    <div class="dashboard-shell">
+        <header class="dashboard-topbar">
+            <a class="dashboard-brand" href="{{ url_for('home') }}" aria-label="EduAnalytics dashboard">
+                <img src="{{ url_for('static', filename='branding/eduanalytics-emblem.png') }}" alt="" aria-hidden="true">
+                <span>Edu<strong>Analytics</strong></span>
+            </a>
+            <nav class="dashboard-nav" aria-label="Main navigation">
+                <a class="dashboard-nav-link active" href="{{ url_for('home') }}">Dashboard</a>
+                <a class="dashboard-nav-link" href="{{ url_for('datasets.upload') }}">Upload dataset</a>
+                {% if current_user.role == "admin" %}
+                    <a class="dashboard-nav-link" href="{{ url_for('admin.educators') }}">Educator Management</a>
+                {% endif %}
+            </nav>
+            <div class="dashboard-userbar">
+                <div class="user-summary">
+                    <span class="user-avatar" aria-hidden="true">{{ current_user.first_name[:1] }}{{ current_user.last_name[:1] }}</span>
+                    <span class="user-details">
+                        <strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong>
+                        <small>{{ current_user.role|capitalize }}</small>
+                    </span>
+                </div>
+                <form method="POST" action="{{ url_for('auth.logout') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="logout-button" type="submit">Log out</button>
+                </form>
+            </div>
+        </header>
 
-        <form method="POST" action="{{ url_for('auth.logout') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit">Log out</button>
-        </form>
-    </main>
+        <main class="dashboard-main">
+            <section class="dashboard-hero">
+                <div>
+                    <p class="dashboard-eyebrow">Academic performance workspace</p>
+                    <h1>Welcome back, {{ current_user.first_name }}.</h1>
+                    <p class="dashboard-intro">Bring your student data into focus and turn academic records into clear, useful insight.</p>
+                </div>
+            </section>
+
+            <section class="workspace-grid" aria-label="Workspace overview">
+                <article class="workspace-card workspace-card-primary">
+                    <div class="workspace-card-icon" aria-hidden="true">↗</div>
+                    <div>
+                        <p class="card-kicker">Get started</p>
+                        <h2>Build your first analysis</h2>
+                        <p>Upload a UCI-based or institutional CSV dataset to begin reviewing student performance.</p>
+                        <span class="workspace-status">Upload workflow available above</span>
+                    </div>
+                </article>
+                <article class="workspace-card">
+                    <div class="workspace-card-icon muted-icon" aria-hidden="true">▦</div>
+                    <div>
+                        <p class="card-kicker">Datasets</p>
+                        <h2>Your data workspace</h2>
+                        <p>Imported datasets and their academic records will appear here for selection and analysis.</p>
+                        <span class="workspace-status">Ready for your first dataset</span>
+                    </div>
+                </article>
+            </section>
+
+            <section class="empty-workspace">
+                <div class="empty-workspace-mark" aria-hidden="true">
+                    <img src="{{ url_for('static', filename='branding/eduanalytics-emblem.png') }}" alt="">
+                </div>
+                <p class="dashboard-eyebrow">Analytics workspace</p>
+                <h2>Your insights will appear here</h2>
+                <p>Once a dataset is imported, this space will show performance summaries, grade distributions, and interactive comparisons.</p>
+                <span class="empty-workspace-note">Your analytics view will become available after the first import.</span>
+            </section>
+
+            <footer class="dashboard-footer">
+                <span>EduAnalytics · Academic Performance Analytics</span>
+                <span>Secure institutional workspace</span>
+            </footer>
+        </main>
+    </div>
 {% endblock %}

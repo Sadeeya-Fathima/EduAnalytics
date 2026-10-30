@@ -1,6 +1,6 @@
 # app/auth/routes.py
 
-from flask import flash, redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_user, logout_user
 from werkzeug.security import check_password_hash
 
@@ -33,5 +33,7 @@ def login():
 def logout():
     if current_user.is_authenticated:
         logout_user()
+        session.pop("dataset_upload", None)
+        session.pop("dataset_preview_token", None)
         flash("You have been logged out.", "success")
     return redirect(url_for("auth.login"))

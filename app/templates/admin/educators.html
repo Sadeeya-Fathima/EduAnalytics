@@ -7,11 +7,31 @@
     <title>Educator Management | EduAnalytics</title>
     <link rel="stylesheet"
       href="{{ url_for('static', filename='admin.css') }}">
+    <link rel="stylesheet"
+      href="{{ url_for('static', filename='dashboard.css', v='4') }}">
 </head>
 <body>
-    <header class="topbar">
-        <div class="brand">EduAnalytics</div>
-        <div class="topbar-label">Administration</div>
+    <header class="dashboard-topbar admin-topbar">
+        <a class="dashboard-brand" href="{{ url_for('home') }}" aria-label="EduAnalytics dashboard">
+            <img src="{{ url_for('static', filename='branding/eduanalytics-emblem.png') }}"
+                 alt="" aria-hidden="true">
+            <span>Edu<strong>Analytics</strong></span>
+        </a>
+        <nav class="dashboard-nav" aria-label="Main navigation">
+            <a class="dashboard-nav-link" href="{{ url_for('home') }}">Dashboard</a>
+            <a class="dashboard-nav-link" href="{{ url_for('datasets.upload') }}">Upload dataset</a>
+            <a class="dashboard-nav-link active" href="{{ url_for('admin.educators') }}">Educator Management</a>
+        </nav>
+        <div class="dashboard-userbar">
+            <div class="user-summary">
+                <span class="user-avatar" aria-hidden="true">{{ current_user.first_name[:1] }}{{ current_user.last_name[:1] }}</span>
+                <span class="user-details"><strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong><small>{{ current_user.role|capitalize }}</small></span>
+            </div>
+            <form method="POST" action="{{ url_for('auth.logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="logout-button" type="submit">Log out</button>
+            </form>
+        </div>
     </header>
 
     <main>

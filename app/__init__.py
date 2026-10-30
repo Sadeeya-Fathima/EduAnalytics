@@ -3,6 +3,7 @@
 import os
 
 from flask import Flask, render_template
+from werkzeug.exceptions import RequestEntityTooLarge
 from flask_wtf.csrf import CSRFProtect
 from flask_login import login_required
 
@@ -27,6 +28,7 @@ def create_app(test_config=None):
 
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///eduanalytics.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 
@@ -45,13 +47,22 @@ def create_app(test_config=None):
     login_manager.login_view = "auth.login"
     csrf.init_app(app)
 
+    @app.errorhandler(RequestEntityTooLarge)
+    def handle_upload_too_large(error):
+        from flask import flash, redirect, url_for
+
+        flash("This CSV file is too large. Please upload a file no larger than 5 MiB.", "error")
+        return redirect(url_for("datasets.upload"))
+
     from app import models  # Register the models with SQLAlchemy
     from app.auth import auth_bp
     from app.admin import admin_bp
+    from app.datasets import datasets_bp
     from app.setup import setup_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(datasets_bp)
     app.register_blueprint(setup_bp)
 
     with app.app_context():

@@ -88,7 +88,6 @@ class Dataset(db.Model):
         "UploadError", back_populates="dataset"
     )
 
-
 class StudentRecord(db.Model):
     __tablename__ = "student_records"
 
@@ -104,7 +103,6 @@ class StudentRecord(db.Model):
     absences = db.Column(db.Integer, nullable=True)
 
     dataset = db.relationship("Dataset", back_populates="student_records")
-
 
 class UploadError(db.Model):
     __tablename__ = "upload_errors"

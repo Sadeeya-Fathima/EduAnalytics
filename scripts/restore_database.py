@@ -5,6 +5,7 @@ import os
 import socket
 import sqlite3
 import sys
+import shutil
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -127,13 +128,22 @@ def server_appears_running() -> bool:
     except OSError:
         return False
 
+
+def replace_with_windows_fallback(source: Path, destination: Path) -> None:
+    """Move a file, retaining compatibility with restricted Windows folders."""
+    try:
+        os.replace(source, destination)
+    except PermissionError:
+        shutil.copy2(source, destination)
+        source.unlink()
+
 def replace_live_database(staging: Path, live: Path, rollback: Path) -> None:
     """Replace the database with a rollback path if the file swap fails."""
-    os.replace(live, rollback)
+    replace_with_windows_fallback(live, rollback)
     try:
-        os.replace(staging, live)
+        replace_with_windows_fallback(staging, live)
     except Exception:
-        os.replace(rollback, live)
+        replace_with_windows_fallback(rollback, live)
         raise
 
 def main() -> int:
@@ -278,8 +288,8 @@ def main() -> int:
                         f".{DATABASE_PATH.stem}_failed_{uuid.uuid4().hex}.db"
                     )
                     if DATABASE_PATH.exists():
-                        os.replace(DATABASE_PATH, failed_live)
-                    os.replace(rollback, DATABASE_PATH)
+                        replace_with_windows_fallback(DATABASE_PATH, failed_live)
+                    replace_with_windows_fallback(rollback, DATABASE_PATH)
                     print("Previous live database restored from rollback.")
                 except OSError as rollback_error:
                     print(

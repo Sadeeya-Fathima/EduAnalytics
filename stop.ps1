@@ -8,6 +8,24 @@ $VenvPython = [IO.Path]::GetFullPath(
 )
 
 try {
+    # Stop every matching EduAnalytics Waitress process. This also repairs
+    # stale or missing PID-file situations and prevents old templates being
+    # served by a second copy of the application.
+    $ManagedProcesses = @(
+        Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.CommandLine -and
+                $_.CommandLine -match '(?i)waitress' -and
+                $_.CommandLine -match '(?i)--call\s+app:create_app' -and
+                $_.CommandLine -match '(?i)--listen(?:=|\s+)0\.0\.0\.0:5000'
+            }
+    )
+
+    foreach ($ManagedProcess in $ManagedProcesses) {
+        Stop-Process -Id $ManagedProcess.ProcessId -Force -ErrorAction Stop
+        Write-Host "Stopped EduAnalytics server process PID $($ManagedProcess.ProcessId)."
+    }
+
     # 1. Check for the PID file.
     if (-not (Test-Path $PidFile -PathType Leaf)) {
         Write-Host "EduAnalytics is not running (PID file not found)." -ForegroundColor Yellow

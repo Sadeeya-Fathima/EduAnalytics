@@ -75,7 +75,7 @@ The implementation will begin with one agreed dataset file and a fixed, document
 
 ### 3.2 Canonical CSV Format
 
-All files uploaded through the MVP must follow one standardized, comma-separated CSV format. Source files such as the UCI dataset and educator-created spreadsheets must be converted to this format before upload. The application will not attempt to automatically map arbitrary spreadsheet column names.
+All files uploaded through the MVP must follow one standardized, comma-separated CSV format. Source files such as the UCI dataset and educator-created spreadsheets must be converted to this format before upload. The application will not attempt to automatically identify UCI files or map arbitrary spreadsheet column names.
 
 The canonical header is:
 
@@ -91,8 +91,8 @@ The columns must appear in this order, using these exact lowercase names.
 | `g1` | No | First assessment grade. |
 | `g2` | No | Second assessment grade. |
 | `g3` | Yes | Final or primary grade used for the minimum dashboard metrics. |
-| `studytime` | No | Study time in actual hours per week when that measurement is available. Do not treat a category code as an exact number of hours. |
-| `absences` | No | Number of recorded absences; must be a non-negative whole number when supplied. |
+| `studytime` | No | Average or typical study time for the subject in hours per week. Must be a non-negative number when supplied. Do not treat a category code as an exact number of hours. |
+| `absences` | No | Number of days the student was absent from the relevant subject or class during the reporting period, when the source genuinely records absence days. Must be a non-negative whole number when supplied. |
 
 Example (illustrative values only):
 
@@ -105,10 +105,10 @@ Student 003,,9,10,2,6
 
 Rules:
 - `student_name` and `g3` are required. `g1`, `g2`, `studytime`, and `absences` may be blank.
-- The application generates an internal unique `student_record_id`; the CSV does not supply the database primary key.
+- `StudentRecord.student` remains the database key used by the current model. The CSV does not supply this key; EduAnalytics assigns it during import. Student records remain scoped to their parent dataset.
 - Student names are labels, not unique identifiers. Duplicate names must not be rejected solely because they match.
 - Grades must be numeric and fall within the grade scale configured for that dataset, such as 0–20 or 0–100. The dataset's scale must be visible in the interface.
-- `g1`, `g2`, and `g3` are stable internal field names. Dataset metadata stores user-facing assessment labels (`g1_label`, `g2_label`, `g3_label`), for example “First Internal”, “Second Internal”, and “Final Exam”. Labels may differ by dataset; the underlying CSV column names do not.
+- `g1`, `g2`, and `g3` are stable internal field names. Dataset metadata stores user-facing assessment labels (`g1_label`, `g2_label`, `g3_label`), for example “First Internal”, “Second Internal”, and “Final Exam”. Labels may differ by dataset; generated CSV headers are dynamic. G1 and G2 columns are omitted when their labels are blank, while G3 remains required.
 - A dataset represents one subject and one defined class/section and academic context for MVP purposes. If source data mixes subjects, prepare separate subject datasets rather than combining them into one dataset.
 - Store relevant dataset metadata, including dataset name, source filename, uploader, subject, department when known, class/section when known, academic year when known, grade-scale maximum, assessment labels, import status, record count, and upload timestamp. Unknown metadata must remain unknown rather than being invented.
 - Users may upload multiple datasets and analyze each dataset independently. Advanced side-by-side comparison or merging of multiple datasets remains out of scope.
@@ -121,7 +121,7 @@ The UCI Student Performance source files use semicolon-separated fields and cont
 - Generate pseudonymous display labels such as `Student 001`, `Student 002`, and so on. These labels are for display only and must not be presented as verified real identities.
 - Preserve the source grade scale: the UCI grades use a 0–20 scale.
 - The UCI `studytime` field is a categorical code representing weekly study-time ranges, not an exact number of hours. Do not import those codes into canonical `studytime` as if they were hours. For UCI-derived data, leave canonical `studytime` blank unless a separate, clearly named category field is deliberately approved for a future schema version.
-- Map `absences` to the canonical `absences` field where available.
+- Map `absences` to the canonical `absences` field where available, without relabelling an unverified source unit as absence days.
 - Record the selected UCI file and the conversion approach in the project documentation.
 
 ### 3.4 Initial Academic Variables
@@ -129,8 +129,8 @@ The UCI Student Performance source files use semicolon-separated fields and cont
 - `G1`: First-period grade
 - `G2`: Second-period grade
 - `G3`: Final grade
-- `studytime`: Weekly study-time category
-- `absences`: Number of absences recorded in the source dataset
+- `studytime`: Canonical field for non-negative subject study hours per week. UCI source values remain categories and must not be imported as exact hours.
+- `absences`: Canonical field for non-negative whole absence days when that unit is established; otherwise preserve the value only with accurate source documentation or leave the optional field blank.
 
 The dashboard will treat `G3` as the final-grade measure, on the dataset's 0–20 scale.
 
@@ -170,6 +170,8 @@ General-purpose support for arbitrary school spreadsheets is not required. Files
 5. Import valid records into the database.
 6. Prevent failed validation from silently creating a partial or misleading dataset.
 7. Display import success or failure information.
+8. Keep preview rows in temporary server-side storage and use a one-time confirmation token to prevent duplicate imports.
+9. Enforce supported CSV input, UTF-8 encoding, a 5 MiB file limit, and reasonable row and field limits.
 
 **Expected outcome:** Users can identify data issues before relying on dashboard results.
 

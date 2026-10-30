@@ -168,6 +168,7 @@ The user-facing workflow should hide routine developer details behind scripts an
 **Planned work**
 - [x] Choose the supported application entry point and server: `app:create_app` served by Waitress.
 - [x] Add Windows `start.ps1` and `stop.ps1` scripts. A separate `restart.ps1` is optional; users can restart with `.\stop.ps1` followed by `.\start.ps1`.
+- [x] Harden `stop.ps1` to discover and stop all matching EduAnalytics Waitress processes listening on `0.0.0.0:5000`, including stale or duplicate processes when the PID file is missing or outdated.
 - [x] Ensure the start script loads the existing persistent user-level `SECRET_KEY` without printing or replacing it.
 - [x] Use Waitress instead of Flask's development server; debug mode is not enabled by the lifecycle scripts.
 - [x] Display the local URL and useful startup and failure messages.
@@ -179,6 +180,7 @@ The user-facing workflow should hide routine developer details behind scripts an
 **Files inspected or updated:** `README.md`, `app/__init__.py`, `requirements.txt`, `setup.ps1`, `start.ps1`, and `stop.ps1`.
 
 **Verification evidence**
+- Duplicate-process recovery: after multiple stale Waitress processes were found listening on port 5000, the updated `stop.ps1` stopped all matching `app:create_app` listeners before a clean single-process restart.
 - `python -m waitress --help` - Waitress is installed and its CLI options are available.
 - `.\start.ps1` - started successfully; `http://127.0.0.1:5000` returned HTTP 200.
 - A second `.\start.ps1` while the server was running was rejected with an already-running message and PID.
