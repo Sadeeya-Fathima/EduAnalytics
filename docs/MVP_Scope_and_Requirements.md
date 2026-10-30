@@ -456,14 +456,16 @@ Responsibilities may overlap, but each module must have one clearly accountable 
 ## 11. Acceptance Criteria
 
 The MVP is considered complete only when the following criteria are demonstrated.
+This checklist is updated incrementally as each sprint completes its committed
+scope; a checked item does not imply that the entire MVP is complete.
 
 ### A. Authentication
 
-- [ ] Administrator and teacher users can log in and log out.
-- [ ] Passwords are stored as secure hashes, not plaintext.
-- [ ] Unauthenticated users cannot access protected application pages.
-- [ ] A teacher cannot perform administrator-only actions.
-- [ ] Administrators can create and activate teacher accounts.
+- [x] Administrator and teacher users can log in and log out.
+- [x] Passwords are stored as secure hashes, not plaintext.
+- [x] Unauthenticated users cannot access protected application pages.
+- [x] A teacher cannot perform administrator-only actions.
+- [x] Administrators can create and activate teacher accounts.
 
 ### B. Database and Application Foundation
 
