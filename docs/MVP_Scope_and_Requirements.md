@@ -6,7 +6,14 @@
 **Project type:** VTU BCD586 Mini Project
 **Team size:** 3 students
 **Development timeline:** 8 weeks
-**Status:** Approved baseline for implementation
+**Status:** Approved baseline; Sprint 5 upload and validation scope completed
+
+**Revision note (31 October 2026):** The CSV ingestion requirements now
+reflect the completed Sprint 5 implementation: dynamic teacher-defined
+headers, automatic preview and validation, row exclusion, server-side
+preview tokens, transactional imports, import-result feedback, and upload
+safeguards. Analytics, dataset selection/history, and export remain future
+MVP work.
 
 ---
 
@@ -447,11 +454,11 @@ The MVP is considered complete only when the following criteria are demonstrated
 
 ### B. Upload and Validation
 
-- [ ] A valid CSV matching the agreed schema can be previewed and imported.
-- [ ] A file missing a required column is rejected with a clear explanation.
-- [ ] Invalid data types and applicable invalid values are reported.
-- [ ] Import failures do not silently create misleading partial datasets.
-- [ ] Upload outcomes and relevant validation errors are recorded or displayed.
+- [x] A valid CSV matching the configured schema can be previewed and imported.
+- [x] A file missing a required column is rejected with a clear explanation.
+- [x] Invalid data types and applicable invalid values are reported.
+- [x] Import failures do not silently create misleading partial datasets.
+- [x] Upload outcomes and relevant validation errors are recorded or displayed.
 
 ### C. Dataset Management
 

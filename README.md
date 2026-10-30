@@ -21,15 +21,11 @@ data, analytics, and interactive dashboards.
 -   Administrator and educator authentication with password-hash
     verification.
 -   Role-based access control and educator account management.
--   Windows setup script and browser-based first-run Administrator
-    setup.
+-   Windows setup script and browser-based first-run Administrator setup.
 -   Managed application startup and shutdown using Waitress.
 -   CSRF protection and persistent application secret-key handling.
 -   Manual SQLite database backup and interactive recovery.
--   LAN access by default for authorized devices on the same local
-    network.
-
-### Implemented
+-   LAN access by default for authorized devices on the same local network.
 
 -   Guided CSV upload with dataset metadata and downloadable templates.
 -   Automatic CSV preview and validation with row-level errors and remarks.
@@ -306,11 +302,12 @@ functionality.
 ## Current Status
 
 Authentication, authorization, educator management, setup, first-run
-Administrator setup, lifecycle scripts, and manual database backup and
-recovery are implemented. The full automated test suite has passed 66
-tests, and the restore-specific suite has passed 10 tests. Setup and LAN
-checks were completed on the current Windows development environment;
-separate-user/machine setup, cross-network access, and production
+Administrator setup, lifecycle scripts, manual database backup and
+recovery, and the Sprint 5 CSV workflow are implemented. Sprint 5 includes
+automatic validation, full preview, row exclusion, transactional import,
+duplicate-submission protection, and import-result feedback. Analytics,
+filters, charts, export, and import history remain planned for a later
+sprint. Separate-user/machine setup, cross-network access, and production
 deployment remain unverified. Automated backup scheduling is not
 implemented.
 
