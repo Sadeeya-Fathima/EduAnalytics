@@ -92,60 +92,24 @@ This is the target permission model. Inspect existing Admin and Educator
 permissions before implementation; do not silently change their current
 behaviour.
 
-  --------------------------------------------------------------------------
-  Capability             Administrator           Educator          Developer
-  ----------------- ------------------ ------------------ ------------------
-  Login and logout                 Yes                Yes                Yes
-
-  Use academic                Existing           Existing                Yes
-  upload workflow           permission         permission 
-
-  View academic               Existing           Existing                Yes
-  analytics                 permission         permission 
-
-  Manage educator                  Yes                 No                Yes
-  accounts                                                
-
-  View all            Existing/limited                 No                Yes
-  application users                                       
-
-  Manage              Existing/limited                 No                Yes
-  non-Developer                                           
-  accounts                                                
-
-  Create Developer                  No                 No                 No
-  accounts in web                                         
-  UI                                                      
-
-  Change own role                   No                 No                 No
-
-  Inspect approved                  No                 No                Yes
-  database tables                                         
-
-  Controlled CRUD                   No                 No                Yes
-  on approved                                             
-  records                                                 
-
-  View database                     No                 No                Yes
-  health                                                  
-
-  View application                  No                 No                Yes
-  diagnostics                                             
-
-  View Developer                    No                 No                Yes
-  audit events                                            
-
-  Initiate full                     No                 No                 No
-  reset from web UI                                       
-
-  Run local                         No                 No       Yes, locally
-  database reset                                          
-  utility                                                 
-
-  Use existing                Existing                 No                Yes
-  backup/recovery           permission                    
-  tools                                                   
-  --------------------------------------------------------------------------
+| Capability | Administrator | Educator | Developer |
+|---|---|---|---|
+| Login and logout | Yes | Yes | Yes |
+| Use academic upload workflow | Existing permission | Existing permission | Yes |
+| View academic analytics | Existing permission | Existing permission | Yes |
+| Manage educator accounts | Yes | No | Yes |
+| View all application users | Existing/limited | No | Yes |
+| Manage non-Developer accounts | Existing/limited | No | Yes |
+| Create Developer accounts in web UI | No | No | No |
+| Change own role | No | No | No |
+| Inspect approved database tables | No | No | Yes |
+| Controlled CRUD on approved records | No | No | Yes |
+| View database health | No | No | Yes |
+| View application diagnostics | No | No | Yes |
+| View Developer audit events | No | No | Yes |
+| Initiate full reset from web UI | No | No | No |
+| Run local database reset utility | No | No | Yes, locally |
+| Use existing backup/recovery tools | Existing permission | No | Yes |
 
 "Developer inherits Administrator capabilities" means the Developer
 receives the capabilities explicitly approved for the Administrator
