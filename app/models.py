@@ -119,3 +119,18 @@ class UploadError(db.Model):
     )
 
     dataset = db.relationship("Dataset", back_populates="upload_errors")
+
+
+class AuditEvent(db.Model):
+    """Minimal database audit record for sensitive Developer operations."""
+
+    __tablename__ = "audit_events"
+
+    id = db.Column(db.Integer, primary_key=True)
+    actor_userid = db.Column(db.String(80), nullable=True)
+    action = db.Column(db.String(100), nullable=False)
+    resource = db.Column(db.String(100), nullable=False)
+    record_reference = db.Column(db.String(255), nullable=True)
+    timestamp = db.Column(db.DateTime(timezone=True), default=utc_now, nullable=False)
+    outcome = db.Column(db.String(20), nullable=False)
+    context = db.Column(db.String(500), nullable=True)

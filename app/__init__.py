@@ -11,6 +11,15 @@ from app.extensions import db, login_manager
 
 csrf = CSRFProtect()
 
+
+def _env_flag(name, default=False):
+    """Read a boolean environment flag using an explicit allowlist."""
+    value = os.environ.get(name)
+    if value is None:
+        return default
+
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
 @login_manager.user_loader
 def load_user(user_id):
     """Load only active users from the database."""
@@ -29,6 +38,15 @@ def create_app(test_config=None):
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///eduanalytics.db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
+    app.config["EDUANALYTICS_ENV"] = os.environ.get(
+        "EDUANALYTICS_ENV", "production"
+    )
+    app.config["EDUANALYTICS_DEV_TOOLS_ENABLED"] = _env_flag(
+        "EDUANALYTICS_DEV_TOOLS_ENABLED", default=False
+    )
+    app.config["EDUANALYTICS_DEV_TOOLS_LOCAL_ONLY"] = _env_flag(
+        "EDUANALYTICS_DEV_TOOLS_LOCAL_ONLY", default=True
+    )
 
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
 
@@ -58,11 +76,13 @@ def create_app(test_config=None):
     from app.auth import auth_bp
     from app.admin import admin_bp
     from app.datasets import datasets_bp
+    from app.developer import developer_bp
     from app.setup import setup_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(datasets_bp)
+    app.register_blueprint(developer_bp)
     app.register_blueprint(setup_bp)
 
     with app.app_context():

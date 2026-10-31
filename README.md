@@ -194,7 +194,72 @@ changes made after that backup was created may be lost.**
     verified the recovered application and data. If recovery reports an
     error, read the full message and investigate before trying again.
 
-### 6. Run automated tests
+### 6. Developer access and maintenance
+
+Developer Administration is an optional local-development workstream. It is
+disabled by default and must never be enabled on an institution deployment.
+No shared or default Developer credentials are provided.
+
+On the local development machine, enable the tools for the current
+PowerShell session:
+
+``` powershell
+$env:SECRET_KEY = [Environment]::GetEnvironmentVariable("SECRET_KEY", "User")
+$env:EDUANALYTICS_ENV = "development"
+$env:EDUANALYTICS_DEV_TOOLS_ENABLED = "true"
+$env:EDUANALYTICS_DEV_TOOLS_LOCAL_ONLY = "true"
+```
+
+Complete normal first-run setup first, then create a per-installation
+Developer account:
+
+``` powershell
+python scripts/create_dev_account.py
+```
+
+The script prompts for the username, email, first name, last name, and a
+hidden password confirmation. It refuses non-development or disabled
+installations and never prints credentials or password hashes.
+
+Start the application and sign in locally:
+
+``` powershell
+.\start.ps1
+```
+
+Open `http://127.0.0.1:5000/` and use the **Developer Tools** menu. The local
+Developer area provides:
+
+-   A safe operational dashboard.
+-   Read-only inspection of approved database resources with pagination.
+-   Controlled updates for approved User, Dataset, and Student Record fields.
+-   Verified manual backup creation and backup metadata.
+-   Diagnostics, audit-log viewing, and maintenance guidance.
+
+Developer tools are loopback-only by default. The LAN application URL must not
+be used for Developer routes. Database restore remains an offline operation:
+
+``` powershell
+.\stop.ps1
+python scripts/restore_database.py
+```
+
+For a full development reset, stop the application and use:
+
+``` powershell
+python scripts/reset_database.py
+```
+
+The reset creates and verifies a safety backup and requires the exact phrase
+`RESET DATABASE`. Use it only for an explicitly enabled development database.
+It removes application accounts and academic data while preserving external
+backup files and application configuration. Do not run it against an
+institution database.
+
+Detailed design, security boundaries, phase evidence, and acceptance criteria
+are documented in [Developer Administration](docs/Developer_Administration.md).
+
+### 7. Run automated tests
 
 From the project root, run:
 
@@ -207,7 +272,7 @@ grouped application suites, including **22 upload-workflow tests** and
 **10 restore-specific tests**. These are recorded verification results for
 the current development environment; rerun the suite after future changes.
 
-### 7. Access from another device on the same network
+### 8. Access from another device on the same network
 
 LAN access is enabled by default for testing on a trusted local network.
 Start EduAnalytics normally:
@@ -303,6 +368,9 @@ functionality.
     Validation](docs/Sprint_5_CSV_Upload_Data_Validation.md) --- completed
     upload, validation, preview, exclusion, and transactional import workflow
     evidence, and known limitations.
+-   [Developer Administration](docs/Developer_Administration.md) --- separate
+    local Developer access, maintenance tooling, security phases, tests, and
+    acceptance evidence.
 
 ## Current Status
 

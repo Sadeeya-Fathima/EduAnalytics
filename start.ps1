@@ -63,12 +63,14 @@ function Show-NextPage {
             Write-Host "First-run setup is not complete." -ForegroundColor Yellow
             Write-Host "Register your institution and create the initial Administrator:"
             Write-Host "$BaseUrl/setup/" -ForegroundColor Cyan
+            return "setup"
         }
         else {
             Write-Host ""
             Write-Host "EduAnalytics is already configured." -ForegroundColor Green
             Write-Host "Open this page to sign in:"
             Write-Host "$BaseUrl/auth/login" -ForegroundColor Cyan
+            return "login"
         }
     }
     catch {
@@ -76,6 +78,7 @@ function Show-NextPage {
         Write-Host "[WARNING] The server is running, but setup status could not be determined." -ForegroundColor Yellow
         Write-Host "Open $BaseUrl/ and check eduanalytics.log.err if necessary."
         Write-Host "Details: $($_.Exception.Message)" -ForegroundColor Yellow
+        return $null
     }
 }
 
@@ -199,7 +202,7 @@ try {
         Write-Host "HTTP status: $([int]$Response.StatusCode)"
 
         # Display the correct setup or login destination.
-        Show-NextPage -BaseUrl "http://127.0.0.1:$ListenPort"
+        $LocalDestination = Show-NextPage -BaseUrl "http://127.0.0.1:$ListenPort"
 
         # 8. Display LAN URLs when LAN binding is enabled.
         if ($ListenHost -eq "0.0.0.0") {
@@ -236,8 +239,18 @@ try {
 
                     Write-Host "$LanBaseUrl/"
 
-                    # Also display the correct page for LAN users.
-                    Show-NextPage -BaseUrl $LanBaseUrl
+                    # /setup/ is intentionally loopback-only. Reuse the
+                    # local setup state instead of probing the LAN URL,
+                    # because its expected 403 must not be mistaken for a
+                    # completed setup.
+                    if ($LocalDestination -eq "login") {
+                        Write-Host "Open this page to sign in:"
+                        Write-Host "$LanBaseUrl/auth/login" -ForegroundColor Cyan
+                    }
+                    elseif ($LocalDestination -eq "setup") {
+                        Write-Host "Setup is incomplete; complete first-run setup on the host PC at:"
+                        Write-Host "http://127.0.0.1:$ListenPort/setup/" -ForegroundColor Cyan
+                    }
                 }
             }
             else {

@@ -16,6 +16,9 @@
                 {% if current_user.role == "admin" %}
                     <a class="dashboard-nav-link" href="{{ url_for('admin.educators') }}">Educator Management</a>
                 {% endif %}
+                {% if current_user.role == "developer" %}
+                    <a class="dashboard-nav-link" href="{{ url_for('developer.dashboard') }}">Developer Tools</a>
+                {% endif %}
             </nav>
             <div class="dashboard-userbar">
                 <div class="user-summary">

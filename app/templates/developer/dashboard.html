@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Developer Dashboard | EduAnalytics{% endblock %}
+
+{% block content %}
+<div class="dashboard-shell developer-shell">
+    <header class="dashboard-topbar">
+        <a class="dashboard-brand" href="{{ url_for('developer.dashboard') }}">
+            <img src="{{ url_for('static', filename='branding/eduanalytics-emblem.png') }}" alt="" aria-hidden="true">
+            <span>Edu<strong>Analytics</strong></span>
+        </a>
+        <nav class="dashboard-nav" aria-label="Developer navigation">
+            <a class="dashboard-nav-link active" href="{{ url_for('developer.dashboard') }}">Developer dashboard</a>
+            <a class="dashboard-nav-link" href="{{ url_for('developer.database_overview') }}">Database</a>
+            <a class="dashboard-nav-link" href="{{ url_for('developer.backups') }}">Backups</a>
+            <a class="dashboard-nav-link" href="{{ url_for('developer.diagnostics') }}">Diagnostics</a>
+            <a class="dashboard-nav-link" href="{{ url_for('developer.audit_log') }}">Audit log</a>
+            <a class="dashboard-nav-link" href="{{ url_for('home') }}">Application</a>
+        </nav>
+        <div class="dashboard-userbar">
+            <div class="user-summary">
+                <span class="user-avatar" aria-hidden="true">{{ current_user.first_name[:1] }}{{ current_user.last_name[:1] }}</span>
+                <span class="user-details">
+                    <strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong>
+                    <small>{{ current_user.role|capitalize }}</small>
+                </span>
+            </div>
+            <form method="POST" action="{{ url_for('auth.logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="logout-button" type="submit">Log out</button>
+            </form>
+        </div>
+    </header>
+
+    <main class="dashboard-main developer-main">
+        <section class="dashboard-hero">
+            <div>
+                <p class="dashboard-eyebrow">Local development tools</p>
+                <h1>Developer dashboard</h1>
+                <p class="dashboard-intro">Safe operational information for this local EduAnalytics installation.</p>
+            </div>
+        </section>
+
+        <section class="workspace-grid" aria-label="Developer environment status">
+            <article class="workspace-card">
+                <div class="workspace-card-icon muted-icon" aria-hidden="true">⚙</div>
+                <div>
+                    <p class="card-kicker">Environment</p>
+                    <h2>{{ environment }}</h2>
+                    <p>Developer tools are explicitly enabled for this installation.</p>
+                    <span class="workspace-status">Enabled: {{ developer_tools_enabled }}</span>
+                </div>
+            </article>
+            <article class="workspace-card">
+                <div class="workspace-card-icon" aria-hidden="true">▦</div>
+                <div>
+                    <p class="card-kicker">Database</p>
+                    <h2>{{ table_count }} tables</h2>
+                    <p>Integrity check: <strong>{{ database_integrity }}</strong></p>
+                    <span class="workspace-status">Connected</span>
+                </div>
+            </article>
+        </section>
+
+        <section class="workspace-card developer-panel">
+            <div>
+                <p class="card-kicker">Safe database overview</p>
+                <h2>Application record counts</h2>
+                <dl class="developer-counts">
+                    <dt>Institutions</dt><dd>{{ counts.institutions }}</dd>
+                    <dt>Users</dt><dd>{{ counts.users }}</dd>
+                    <dt>Datasets</dt><dd>{{ counts.datasets }}</dd>
+                    <dt>Student records</dt><dd>{{ counts.student_records }}</dd>
+                    <dt>Upload errors</dt><dd>{{ counts.upload_errors }}</dd>
+                </dl>
+            </div>
+            <div>
+                <p class="card-kicker">Database location</p>
+                <p class="developer-safe-value">{{ database_location }}</p>
+                <p class="card-kicker">Latest backup</p>
+                {% if latest_backup %}
+                    <p class="developer-safe-value">{{ latest_backup.name }}</p>
+                    <small>{{ latest_backup.created.strftime('%Y-%m-%d %H:%M:%S %Z') }}</small>
+                {% else %}
+                    <p class="developer-safe-value">No backup file found</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <footer class="dashboard-footer">
+            <span>EduAnalytics · Developer Access Development</span>
+            <span>Local-only maintenance surface</span>
+        </footer>
+    </main>
+</div>
+{% endblock %}

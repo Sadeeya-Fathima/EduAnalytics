@@ -2,7 +2,7 @@
 
 **Document type:** Engineering and maintenance specification\
 **Version:** 1.0 --- Proposed implementation baseline\
-**Status:** Design baseline finalized for post-MVP implementation\
+**Status:** Implementation complete; handoff documentation finalized\
 **Applies to:** Local development installations of EduAnalytics
 
 ------------------------------------------------------------------------
@@ -245,7 +245,7 @@ The script must:
 3.  Verify Developer tools are enabled.
 4.  Verify the database is available and initialized, or instruct the
     operator to run normal setup first.
-5.  Prompt for a username.
+5.  Prompt for a username, email address, first name, and last name.
 6.  Prompt for a password and confirmation using `getpass`, without
     echoing it.
 7.  Apply the project's password policy.
@@ -276,6 +276,9 @@ Checking development configuration...
 Checking database...
 
 Username: developer
+Email: developer@example.com
+First name: Developer
+Last name: Account
 Password: ********
 Confirm password: ********
 
@@ -761,7 +764,7 @@ complete merely because its code exists.
 
 ### 14.2 Phase D0 --- Workstream preparation
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Establish the implementation boundary and a reproducible
 baseline before changing application behaviour.
@@ -782,9 +785,37 @@ begins, or all baseline failures are documented with an owner and reason.
 **Completion gate:** The repository architecture, test baseline, and scope
 boundary are documented; no application behavior has been changed.
 
+**Implementation record (2026-10-31):**
+
+-   The workstream boundary is confirmed: Developer Access Development is
+    separate from Sprint 6 --- Dataset Management and from the frozen MVP.
+-   The current application uses Flask blueprints, Flask-Login,
+    Flask-SQLAlchemy, and a centralized `role_required` decorator.
+-   The current roles are `admin` and `educator`; no `developer` role or
+    Developer blueprint exists yet.
+-   The current models are `Institution`, `User`, `Dataset`,
+    `StudentRecord`, and `UploadError`, with dataset/student-record and
+    user/institution relationships already defined.
+-   First-run setup is loopback-only and creates the initial Administrator;
+    ordinary setup does not create Developer accounts.
+-   The application database defaults to `instance/eduanalytics.db`.
+-   Existing backup and restore scripts use the sibling
+    `EduAnalytics_Backups` directory and already provide integrity checks,
+    safety copies, rollback handling, and Windows server-use checks.
+-   Existing Administrator, Educator, setup, upload, model, backup, and
+    restore tests were identified for the baseline regression suite.
+-   No application behavior was changed during this audit.
+-   The repository virtual environment was used explicitly at
+    `.venv\\Scripts\\python.exe` with Python 3.12.2 and pytest 9.1.1.
+-   Baseline command: `python -m pytest -v` from the activated repository
+    virtual environment.
+-   Baseline result: **88 tests passed in 22.70 seconds**.
+-   The Phase D0 completion gate passed. No application behavior was changed
+    during the audit or baseline test run.
+
 ### 14.3 Phase D1 --- Configuration and centralized authorization
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Add secure, disabled-by-default gates for all Developer
 functionality.
@@ -808,9 +839,33 @@ URL protection.
 centralized authorization path, and existing Admin/Educator tests remain
 green.
 
+**Implementation record (2026-10-31):**
+
+-   Added explicit `EDUANALYTICS_ENV`,
+    `EDUANALYTICS_DEV_TOOLS_ENABLED`, and
+    `EDUANALYTICS_DEV_TOOLS_LOCAL_ONLY` application configuration values.
+-   Developer tools default to disabled, and the environment defaults to
+    non-development so ordinary startup cannot enable Developer access.
+-   Added centralized `developer_access_required` and
+    `developer_tools_enabled` authorization helpers.
+-   Developer access requires an explicitly enabled development environment,
+    an active user with role `developer`, and a loopback request when local-
+    only mode is enabled.
+-   Forwarded headers are not trusted for local-only enforcement.
+-   Existing Administrator and Educator role values and route behavior were
+    preserved.
+-   Added `tests/developer/test_configuration.py` and
+    `tests/developer/test_permissions.py`, covering disabled defaults,
+    non-development denial, local-only denial, forwarded-header rejection,
+    successful loopback Developer access, and non-Developer denial.
+-   Verification command: `.\\.venv\\Scripts\\python.exe -m pytest -q`.
+-   Developer test verification: `.\\.venv\\Scripts\\python.exe -m pytest
+    tests/developer -v` --- **7 tests passed in 0.28 seconds**.
+-   Full regression verification: **95 tests passed in 47.70 seconds**.
+
 ### 14.4 Phase D2 --- Local Developer account provisioning
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Provide secure per-installation Developer account creation.
 
@@ -834,9 +889,35 @@ rollback after failure.
 **Completion gate:** A fresh development installation can create exactly the
 intended Developer account through the local CLI without exposing secrets.
 
+**Implementation record (2026-10-31):**
+
+-   Added `scripts/create_dev_account.py` using the existing Flask application
+    factory, SQLAlchemy session, User model, and Werkzeug password hashing.
+-   Provisioning requires `EDUANALYTICS_ENV=development` and
+    `EDUANALYTICS_DEV_TOOLS_ENABLED=true`.
+-   Provisioning verifies that the database contains the required tables and
+    exactly one institution created by normal first-run setup.
+-   The CLI prompts for a User ID, email address, first name, last name, and
+    hidden password confirmation; passwords are never accepted as
+    command-line arguments or printed.
+-   User IDs are validated, duplicate User IDs are rejected before password
+    input, and existing accounts are never modified.
+-   Email, first name, and last name are validated using the same basic rules
+    as normal first-run setup and are stored from the operator's input.
+-   The account is created with role `developer`, active status, and a
+    transactionally committed password hash.
+-   Added `tests/developer/test_account_creation.py` covering successful
+    creation, configuration denial, duplicate rejection, password policy,
+    mismatch handling, and hash verification.
+-   Focused verification command: `.\\.venv\\Scripts\\python.exe -m pytest
+    tests/developer/test_account_creation.py -v` --- **6 tests passed in
+    1.33 seconds**.
+-   Full regression verification: `.\\.venv\\Scripts\\python.exe -m pytest
+    -q` --- **101 tests passed in 50.87 seconds**.
+
 ### 14.5 Phase D3 --- Developer blueprint and protected dashboard
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Introduce a separate Developer web area with safe operational
 visibility.
@@ -858,9 +939,31 @@ failure handling.
 **Completion gate:** The dashboard is useful for local maintenance while
 revealing no protected secrets or unrestricted records.
 
+**Implementation record (2026-10-31):**
+
+-   Added the `app/developer/` blueprint with the protected `/developer/`
+    dashboard route.
+-   Reused `developer_access_required`, so the dashboard requires an active
+    Developer, explicit development configuration, enabled Developer tools,
+    and a loopback request in local-only mode.
+-   Added a separate Developer navigation surface with a link back to the
+    normal application.
+-   The dashboard displays environment, enablement state, database table
+    count, database integrity result, safe record counts, database location,
+    and latest backup-file metadata when available.
+-   The dashboard does not display password hashes, credentials, secret keys,
+    session tokens, full environment variables, or unrestricted academic
+    records.
+-   Added `tests/developer/test_dashboard.py` covering authorized access,
+    non-Developer denial, LAN denial, and sensitive-output redaction.
+-   Focused verification command: `.\\.venv\\Scripts\\python.exe -m pytest
+    tests/developer -v` --- **16 tests passed in 1.16 seconds**.
+-   Full regression verification: `.\\.venv\\Scripts\\python.exe -m pytest
+    -q` --- **104 tests passed in 22.23 seconds**.
+
 ### 14.6 Phase D4 --- Read-only database explorer
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Provide safe inspection of approved resources before allowing
 mutations.
@@ -880,9 +983,33 @@ unauthorized access, and malformed-resource rejection.
 **Completion gate:** Developers can inspect approved data without arbitrary SQL
 or accidental exposure of sensitive fields.
 
+**Implementation record (2026-10-31):**
+
+-   Added explicit read-only resource definitions in
+    `app/developer/services.py` for Users, Institutions, Datasets, Student
+    Records, and Upload Errors.
+-   Added `/developer/database`, `/developer/database/tables`, and
+    `/developer/database/records/<resource>` routes protected by the
+    centralized Developer authorization gate.
+-   Resource selection uses a server-side allowlist; unknown resource names
+    return `404` and are never interpolated into SQL.
+-   Display fields are explicitly defined per resource. The User password
+    field is not included in serialization or rendered tables.
+-   Records are paginated with a fixed page size of 25 and invalid page input
+    safely defaults to page 1.
+-   Added read-only database and records templates. No edit, delete, schema
+    modification, arbitrary SQL, or unbounded dump operation is exposed.
+-   Added `tests/developer/test_database_explorer.py` covering allowlisted
+    resources, password redaction, unknown-resource rejection, pagination,
+    and Developer authorization.
+-   Focused verification command: `.\\.venv\\Scripts\\python.exe -m pytest
+    tests/developer -v` --- **20 tests passed in 5.17 seconds**.
+-   Full regression verification: `.\\.venv\\Scripts\\python.exe -m pytest
+    -q` --- **108 tests passed in 58.56 seconds**.
+
 ### 14.7 Phase D5 --- Audit logging foundation
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Make sensitive Developer activity traceable before enabling
 mutating operations.
@@ -902,9 +1029,31 @@ transaction behavior, and reset-log safety.
 **Completion gate:** The application can account for sensitive Developer
 operations without creating a second source of sensitive data.
 
+**Implementation record (2026-10-31):**
+
+-   Added the `AuditEvent` database model with actor, action, resource, record
+    reference, timestamp, outcome, and bounded context fields.
+-   Added `app/developer/audit.py` with a reusable transactional audit-event
+    service.
+-   Sensitive context containing password, hash, secret, token, or cookie
+    terms is replaced with a redaction marker; context is also length-limited.
+-   Protected Developer route access records successful and denied outcomes,
+    including disabled/non-development, non-loopback, and non-Developer
+    denials.
+-   Successful local Developer account provisioning records a minimal
+    `local-operator` audit event after the account transaction commits.
+-   Audit failures do not turn a protected-route denial into an application
+    error; the failure is logged through the application logger.
+-   Added `tests/developer/test_audit_log.py` covering event fields, sensitive
+    context redaction, successful access, and denied LAN access.
+-   Focused verification command: `.\\.venv\\Scripts\\python.exe -m pytest
+    tests/developer -q` --- **23 tests passed in 6.60 seconds**.
+-   Full regression verification: `.\\.venv\\Scripts\\python.exe -m pytest
+    -q` --- **111 tests passed in 56.16 seconds**.
+
 ### 14.8 Phase D6 --- Controlled CRUD services
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Add narrowly scoped, validated maintenance operations.
 
@@ -926,9 +1075,33 @@ redaction, and success/failure audit events.
 **Completion gate:** Every supported mutation is allowlisted, validated,
 recoverable, and covered by security tests.
 
+**Implementation record (2026-10-31):**
+
+-   Extended `ResourceDefinition` with explicit editable-field allowlists.
+-   Added validated update services for Users, Datasets, and Student Records.
+-   User updates permit profile/status fields only; role, password, User ID,
+    institution, and password-hash fields cannot be changed.
+-   Dataset updates permit controlled metadata fields only; ownership,
+    imported record counts, source file, and import status are protected.
+-   Student-record updates validate numeric values against the parent
+    dataset's grade scale and preserve the existing `dataset_id` relationship.
+-   Added protected edit routes and forms under
+    `/developer/database/records/<resource>/<id>/edit`.
+-   Successful and failed updates write audit events through the D5 service.
+-   Unsupported create and delete operations remain disabled in this phase;
+    no destructive operation is exposed without a separately reviewed
+    confirmation and recovery design.
+-   Added `tests/developer/test_database_crud.py` covering allowlisted user
+    updates, role-change rejection, dataset relationship protection, grade
+    validation, rollback behavior, and audit outcomes.
+-   Focused verification command: `.\\.venv\\Scripts\\python.exe -m pytest
+    tests/developer -q` --- **27 tests passed in 3.02 seconds**.
+-   Full regression verification: `.\\.venv\\Scripts\\python.exe -m pytest
+    -q` --- **115 tests passed in 24.33 seconds**.
+
 ### 14.9 Phase D7 --- Backup and recovery integration
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Reuse and expose existing backup/recovery behavior safely.
 
@@ -947,9 +1120,30 @@ failure handling, and compatibility with existing backup/recovery tests.
 **Completion gate:** Developer integration uses the same trusted backup and
 recovery path as the existing maintenance scripts.
 
+**Implementation record (2026-10-31):**
+
+-   Added the protected `/developer/backups` page.
+-   Reused `scripts.backup_database.create_backup` for manual backup
+    creation; no second backup implementation was introduced.
+-   Reused `scripts.restore_database.inspect_backup` to verify listed backup
+    files and display their status, timestamp, size, and filename.
+-   Added a local Developer-only manual backup action with success/failure
+    audit events.
+-   Backup files remain outside the repository and are not exposed for web
+    download.
+-   Restore remains an offline operation through the existing
+    `scripts/restore_database.py` safety-backup and rollback procedure.
+-   Added navigation from the Developer dashboard to the backup page.
+-   Added `tests/developer/test_backup_integration.py` covering verified
+    metadata display, reuse of the existing backup service, and audit logging.
+-   Focused verification command: `.\\.venv\\Scripts\\python.exe -m pytest
+    tests/developer -q` --- **29 tests passed in 7.99 seconds**.
+-   Full regression verification: `.\\.venv\\Scripts\\python.exe -m pytest
+    -q` --- **117 tests passed in 52.82 seconds**.
+
 ### 14.10 Phase D8 --- Offline full database reset
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Provide a safe local reset and return the application to
 first-run state.
@@ -976,9 +1170,36 @@ setup availability.
 **Completion gate:** Reset is proven against isolated temporary databases and
 never against a real working installation during automated testing.
 
+**Implementation record (2026-10-31):**
+
+-   Added `scripts/reset_database.py` as a local offline maintenance utility.
+-   Reset requires `EDUANALYTICS_ENV=development`, enabled Developer tools,
+    a present database, a stopped application, and no SQLite sidecar files.
+-   Reset creates a verified safety backup through the existing backup
+    service before any destructive operation.
+-   Reset requires the exact confirmation phrase `RESET DATABASE`; any other
+    input leaves the live database unchanged while retaining the safety
+    backup.
+-   The reset recreates the schema through the existing application factory,
+    verifies required tables and SQLite integrity, and verifies that all
+    application data and audit events are empty.
+-   Application configuration and external backup files are preserved because
+    only the database file is replaced.
+-   A minimal reset outcome is written to the external maintenance log under
+    `EduAnalytics_Maintenance`, outside the repository and database.
+-   Added `tests/developer/test_reset.py` covering configuration refusal,
+    cancellation, verified safety backup, empty-schema recreation, integrity,
+    backup preservation, and active-server refusal.
+-   D8 tests use isolated temporary databases only; the real working database
+    was not reset.
+-   Focused verification command: `.\\.venv\\Scripts\\python.exe -m pytest
+    tests/developer/test_reset.py -q` --- **4 tests passed in 1.19 seconds**.
+-   Full regression verification: `.\\.venv\\Scripts\\python.exe -m pytest
+    -q` --- **121 tests passed in 53.55 seconds**.
+
 ### 14.11 Phase D9 --- Diagnostics and complete Developer audit interface
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Complete the operational maintenance experience without
 exposing sensitive internals.
@@ -998,9 +1219,30 @@ exposing sensitive internals.
 **Completion gate:** Diagnostics and audit information are actionable for
    local development while remaining bounded and non-secret.
 
+**Implementation record (2026-10-31):**
+
+-   Added the protected `/developer/diagnostics` page with Python/platform,
+    application version, selected dependency versions, database integrity,
+    required-table count, and backup-directory information.
+-   Diagnostics use an explicit safe allowlist and do not expose secret keys,
+    full environment variables, credentials, hashes, tokens, or arbitrary
+    shell/Python execution.
+-   Added the protected paginated `/developer/audit-log` page showing actor,
+    action, resource, reference, outcome, timestamp, and bounded context.
+-   Added the protected `/developer/maintenance` page with safe guidance for
+    stopping the app, backup, restore, and reset operations.
+-   Added navigation links for Diagnostics, Audit log, Backups, Database, and
+    Application across the Developer maintenance surfaces.
+-   Added `tests/developer/test_diagnostics_and_audit_ui.py` covering bounded
+    diagnostics, audit-event display, and offline maintenance guidance.
+-   Focused verification command: `.\\.venv\\Scripts\\python.exe -m pytest
+    tests/developer -q` --- **36 tests passed in 10.57 seconds**.
+-   Full regression verification: `.\\.venv\\Scripts\\python.exe -m pytest
+    -q` --- **124 tests passed in 54.87 seconds**.
+
 ### 14.12 Phase D10 --- Security, regression, and acceptance verification
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Verify the complete workstream without regressing the core
    application.
@@ -1018,9 +1260,38 @@ exposing sensitive internals.
 **Completion gate:** All Must criteria pass, or any exception is explicitly
 approved and documented before the workstream is declared complete.
 
+**Implementation record (2026-10-31):**
+
+-   Ran the complete Developer security and behavior suite.
+-   Ran the complete existing application regression suite, including
+    authentication, authorization, setup, uploads, models, backups, and
+    recovery.
+-   Verified that Administrator and Educator behavior remained covered by the
+    existing tests and was not regressed by Developer functionality.
+-   Verified that Developer access remains disabled unless explicitly enabled
+    for development and remains loopback-only by default.
+-   Verified D8 reset behavior only against isolated temporary databases; the
+    real working database was not reset.
+-   Ran Python compilation checks and `git diff --check` successfully.
+-   Reviewed source for hard-coded shared credentials and reusable password
+    patterns; none were introduced by the Developer implementation.
+-   Focused verification command: `.\\.venv\\Scripts\\python.exe -m pytest
+    tests/developer -q` --- **36 tests passed in 9.38 seconds**.
+-   Full regression verification: `.\\.venv\\Scripts\\python.exe -m pytest
+    -q` --- **124 tests passed in 58.11 seconds**.
+
+**Known limitations requiring final handoff documentation:**
+
+-   Production deployment and institution-LAN behavior require separate
+    environment and firewall verification; Developer tools must remain
+    disabled there.
+-   The reset utility has automated isolated-database coverage but has not
+    been run against a real working installation.
+-   No automated backup scheduling is introduced.
+
 ### 14.13 Phase D11 --- Documentation and handoff
 
-**Status:** Not started
+**Status:** Complete
 
 **Objective:** Publish operational documentation only after implementation
 and verification are complete.
@@ -1039,6 +1310,24 @@ and verification are complete.
 
 **Completion gate:** Documentation matches the shipped behavior exactly and
 the final changes are reviewed before publication.
+
+**Implementation record (2026-10-31):**
+
+-   Updated the root `README.md` with the implemented local Developer setup,
+    account provisioning, dashboard, database inspection, controlled updates,
+    backup, diagnostics, audit, maintenance, restore, and reset workflow.
+-   Documented that Developer tools are disabled by default, loopback-only,
+    development-only, and must not be enabled on institution deployments.
+-   Documented that no shared/default credentials are provided.
+-   Added the Developer Administration specification to the README document
+    index.
+-   Confirmed README instructions describe implemented behavior only.
+-   Final handoff verification: D0 through D10 phase records and evidence are
+    present in this document.
+-   Final documentation verification command: `.\\.venv\\Scripts\\python.exe
+    -m pytest -q` --- **124 tests passed**.
+-   GitHub publication remains a separate final action requiring review and
+    explicit approval.
 
 ### 14.14 Phase update protocol
 
@@ -1206,7 +1495,8 @@ be implemented, tested, and verified.
   Maintenance logs expose private     Minimal event fields and redaction
   data                                
 
-  Developer work delays academic MVP  Separate post-MVP milestone
+  Developer work delays academic MVP  Separate workstream with an independent
+                                      schedule and scope gate before Sprint 6
   -----------------------------------------------------------------------
 
 ## 18. Change control
@@ -1240,9 +1530,13 @@ The agreed design is:
 -   Verified safety backup before reset.
 -   Existing backup and recovery mechanisms reused.
 -   Separate audit logging and acceptance criteria.
--   Implementation after the academic MVP is complete.
+-   Implementation as a separate development workstream completed before
+    Sprint 6 --- Dataset Management.
+-   No Developer requirements are added to the frozen academic MVP scope or
+    its acceptance criteria.
 -   README updated only when functionality is implemented and verified.
 
-**Status:** Design baseline finalized for future implementation. No
-Developer Administration functionality is implied to exist until the
-implementation roadmap and acceptance criteria have been completed.
+**Status:** Developer Access Development completed through Phase D11. The
+implementation, tests, security boundaries, README handoff documentation,
+and acceptance evidence are complete. Developer Administration remains a
+separate workstream from Sprint 6 and the frozen MVP scope.
