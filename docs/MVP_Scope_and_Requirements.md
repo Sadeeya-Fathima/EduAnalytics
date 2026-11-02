@@ -486,10 +486,13 @@ scope; a checked item does not imply that the entire MVP is complete.
 
 ### D. Dataset Management
 
-- [ ] Imported datasets appear in the dataset list.
-- [ ] A user can select a dataset for analysis.
+- [x] Imported datasets appear in the institution-scoped dataset list and
+      dashboard cohort cards.
+- [x] A user can select a dataset for analysis, with server-side validation
+      and session persistence.
 - [ ] The dashboard uses the selected dataset rather than unrelated records.
-- [ ] Upload history shows sufficient information to identify each import.
+- [x] Dataset details show the available stored upload/import information,
+      including source, uploader, timestamp, status, and imported record count.
 
 ### E. Analytics
 
