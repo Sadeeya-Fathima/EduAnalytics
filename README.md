@@ -347,8 +347,9 @@ rather than exact hours.
 
 ## Next Implementation
 
-Sprint 5 completed the core student-data workflow. The next work follows
-the MVP specification's module boundaries:
+Sprint 5 completed the core student-data workflow, and Sprint 6 completed
+Dataset Management. The next work follows the MVP specification's module
+boundaries:
 
 1.  **Academic Analytics Dashboard** --- calculate verified summaries and
     add charts, filters, and student-group comparisons for the selected
@@ -360,8 +361,8 @@ When implementing analytics, preserve the distinction that UCI `studytime`
 values are categorical weekly-study ranges, not exact hours. They must not
 be treated as measured hours unless a separate source provides that unit.
 
-Dataset Management is complete. Academic Analytics and filtered export remain
-planned for the next sprints.
+Sprint 7 is now the Academic Analytics Dashboard sprint. Filtered export
+remains planned after analytics.
 
 ## Project Documentation
 
