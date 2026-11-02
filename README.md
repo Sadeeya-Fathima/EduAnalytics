@@ -273,8 +273,17 @@ python -m pytest -v
 
 The Sprint 5 regression evidence records **86 tests** passed across the
 grouped application suites, including **22 upload-workflow tests** and
-**10 restore-specific tests**. These are recorded verification results for
-the current development environment; rerun the suite after future changes.
+**10 restore-specific tests**. This is historical Sprint 5 evidence.
+
+The latest Sprint 6 full regression run passed **136 tests** using the project
+virtual environment:
+
+``` powershell
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+Both results are recorded verification evidence for the current development
+environment; rerun the suite after future changes.
 
 ### 8. Access from another device on the same network
 
