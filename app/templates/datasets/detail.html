@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ dataset.name }} | EduAnalytics{% endblock %}
+
+{% block content %}
+<div class="dashboard-shell">
+    <header class="dashboard-topbar">
+        <a class="dashboard-brand" href="{{ url_for('home') }}" aria-label="EduAnalytics dashboard">
+            <img src="{{ url_for('static', filename='branding/eduanalytics-emblem.png') }}" alt="" aria-hidden="true">
+            <span>Edu<strong>Analytics</strong></span>
+        </a>
+        <nav class="dashboard-nav" aria-label="Main navigation">
+            <a class="dashboard-nav-link" href="{{ url_for('home') }}">Dashboard</a>
+            <a class="dashboard-nav-link active" href="{{ url_for('datasets.management') }}">Datasets</a>
+            <a class="dashboard-nav-link" href="{{ url_for('datasets.upload') }}">Upload dataset</a>
+            {% if current_user.role == "developer" %}<a class="dashboard-nav-link" href="{{ url_for('developer.dashboard') }}">System Tools</a>{% endif %}
+        </nav>
+        <div class="dashboard-userbar">
+            <div class="user-summary"><span class="user-avatar" aria-hidden="true">{{ current_user.first_name[:1] }}{{ current_user.last_name[:1] }}</span><span class="user-details"><strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong><small>{{ current_user.role|capitalize }}</small></span></div>
+            <form method="POST" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout-button" type="submit">Log out</button></form>
+        </div>
+    </header>
+    <main class="dashboard-main">
+        <p class="detail-back-row"><a class="back-button" href="{{ url_for('datasets.management') }}"><span aria-hidden="true">←</span> Back to Dataset Management</a></p>
+        <section class="dashboard-hero dataset-page-hero dataset-detail-hero">
+            <div>
+                <p class="dashboard-eyebrow">Dataset details</p>
+                <h1>{{ dataset.name }}</h1>
+                <p class="dashboard-intro">{{ dataset.subject }}{% if dataset.class_section %} · {{ dataset.class_section }}{% endif %}{% if dataset.academic_year %} · {{ dataset.academic_year }}{% endif %}</p>
+            </div>
+            <div class="dataset-detail-action">
+                <div class="dataset-detail-actions">{% if active_dataset and active_dataset.id == dataset.id %}<p class="active-dataset-badge">Set for analysis</p>{% else %}<form method="post" action="{{ url_for('datasets.select', dataset_id=dataset.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="secondary-action" type="submit">Set for Analysis</button></form>{% endif %}<span class="primary-action disabled-action" aria-disabled="true" title="Analytics will be available in Sprint 7">Analyze Dataset</span></div>
+            </div>
+        </section>
+        <section class="dataset-detail-grid" aria-label="Dataset metadata">
+            <article class="dataset-detail-card"><span>Records</span><strong>{{ record_count }}</strong></article>
+            <article class="dataset-detail-card"><span>Import status</span><strong>{{ dataset.import_status|capitalize }}</strong></article>
+            <article class="dataset-detail-card"><span>Grade scale</span><strong>{{ dataset.grade_scale_max }}</strong></article>
+            <article class="dataset-detail-card"><span>Source</span><strong>{{ dataset.source_filename }}</strong></article>
+            <article class="dataset-detail-card"><span>Uploaded by</span><strong>{{ dataset.uploader.first_name }} {{ dataset.uploader.last_name }}</strong></article>
+            <article class="dataset-detail-card"><span>Imported</span><strong>{{ dataset.created_at.strftime('%Y-%m-%d %H:%M UTC') if dataset.created_at else 'Unknown' }}</strong></article>
+        </section>
+        <section class="dataset-metadata-panel">
+            <h2>Assessment configuration</h2>
+            <dl class="metadata-list">
+                <div><dt>G1 label</dt><dd>{{ dataset.g1_label or 'Not recorded' }}</dd></div>
+                <div><dt>G2 label</dt><dd>{{ dataset.g2_label or 'Not recorded' }}</dd></div>
+                <div><dt>G3 label</dt><dd>{{ dataset.g3_label or 'Not recorded' }}</dd></div>
+                <div><dt>Department</dt><dd>{{ dataset.department or 'Not recorded' }}</dd></div>
+            </dl>
+        </section>
+        <section class="dataset-metadata-panel">
+            <h2>Import information</h2>
+            <dl class="metadata-list import-information-list">
+                <div><dt>Imported on</dt><dd>{{ dataset.created_at.strftime('%Y-%m-%d %H:%M UTC') if dataset.created_at else 'Not recorded' }}</dd></div>
+                <div><dt>Uploader</dt><dd>{{ dataset.uploader.first_name }} {{ dataset.uploader.last_name }}</dd></div>
+                <div><dt>Source file</dt><dd>{{ dataset.source_filename or 'Not recorded' }}</dd></div>
+                <div><dt>Import status</dt><dd>{{ dataset.import_status or 'Not recorded' }}</dd></div>
+                <div><dt>Imported records</dt><dd>{{ record_count }}</dd></div>
+                <div><dt>Department</dt><dd>{{ dataset.department or 'Not recorded' }}</dd></div>
+            </dl>
+            <p class="metadata-note">Import information is shown from the current dataset record. No separate import-history records are stored in the current schema.</p>
+        </section>
+        <section class="dataset-records-panel">
+            <div class="section-heading"><div><p class="dashboard-eyebrow">Student records</p><h2>Imported values</h2></div><span class="workspace-status">{{ record_count }} record{{ '' if record_count == 1 else 's' }}</span></div>
+            {% if records %}
+                <div class="dataset-records-table-wrap"><table class="dataset-records-table"><thead><tr><th>Student</th>{% if dataset.g1_label %}<th>{{ dataset.g1_label }}</th>{% endif %}{% if dataset.g2_label %}<th>{{ dataset.g2_label }}</th>{% endif %}<th>{{ dataset.g3_label }}</th><th>Study Time</th><th>Absences</th></tr></thead><tbody>{% for record in records %}<tr><td>{{ record.student_name }}</td>{% if dataset.g1_label %}<td>{{ record.g1 if record.g1 is not none else '—' }}</td>{% endif %}{% if dataset.g2_label %}<td>{{ record.g2 if record.g2 is not none else '—' }}</td>{% endif %}<td>{{ record.g3 }}</td><td>{{ record.studytime if record.studytime is not none else '—' }}</td><td>{{ record.absences if record.absences is not none else '—' }}</td></tr>{% endfor %}</tbody></table></div>
+            {% else %}<p>No student records are associated with this dataset.</p>{% endif %}
+        </section>
+    </main>
+</div>
+{% endblock %}

@@ -36,13 +36,17 @@ data, analytics, and interactive dashboards.
 -   File-type, encoding, delimiter, header, field-size, row-count, and 5 MiB
     upload safeguards.
 -   Import success feedback with the imported dataset and record count.
+-   Dataset Management with institution-scoped listing, dataset details,
+    metadata, imported-record views, active analysis-dataset selection, and
+    stored import information.
+-   Responsive dashboard with workspace KPIs and academic dataset cohort cards.
+-   Modern setup, administration, backup, and error-page interfaces.
 
 ### Planned
 
 -   Academic performance summaries and interactive dashboards.
 -   Charts, filters, and group comparisons.
 -   Export of filtered records as CSV.
--   Import history.
 
 ## Technology Stack
 
@@ -337,20 +341,18 @@ rather than exact hours.
 Sprint 5 completed the core student-data workflow. The next work follows
 the MVP specification's module boundaries:
 
-1.  **Dataset Management** --- list imported datasets, expose upload
-    metadata, support dataset selection, and maintain import history.
-2.  **Academic Analytics Dashboard** --- calculate verified summaries and
+1.  **Academic Analytics Dashboard** --- calculate verified summaries and
     add charts, filters, and student-group comparisons for the selected
     dataset.
-3.  **Filtered Analytics Export** --- export records matching the active
+2.  **Filtered Analytics Export** --- export records matching the active
     dataset and dashboard filters as CSV.
 
 When implementing analytics, preserve the distinction that UCI `studytime`
 values are categorical weekly-study ranges, not exact hours. They must not
 be treated as measured hours unless a separate source provides that unit.
 
-These features remain planned and are not yet implemented as completed
-functionality.
+Dataset Management is complete. Academic Analytics and filtered export remain
+planned for the next sprints.
 
 ## Project Documentation
 
@@ -368,6 +370,10 @@ functionality.
     Validation](docs/Sprint_5_CSV_Upload_Data_Validation.md) --- completed
     upload, validation, preview, exclusion, and transactional import workflow
     evidence, and known limitations.
+-   [Sprint 6 --- Dataset
+    Management](docs/Sprint_6_Dataset_Management.md) --- completed dataset
+    listing, dashboard cohorts, metadata, record views, selection, import
+    information, testing evidence, and handoff to Sprint 7.
 -   [Developer Administration](docs/Developer_Administration.md) --- separate
     local Developer access, maintenance tooling, security phases, tests, and
     acceptance evidence.
@@ -376,11 +382,12 @@ functionality.
 
 Authentication, authorization, educator management, setup, first-run
 Administrator setup, lifecycle scripts, manual database backup and
-recovery, and the Sprint 5 CSV workflow are implemented. Sprint 5 includes
-automatic validation, full preview, row exclusion, transactional import,
-duplicate-submission protection, and import-result feedback. Analytics,
-filters, charts, export, and import history remain planned for a later
-sprint. Separate-user/machine setup, cross-network access, and production
+recovery, the Sprint 5 CSV workflow, and Sprint 6 Dataset Management are
+implemented. Sprint 6 includes institution-scoped dataset listing, dashboard
+cohorts and KPIs, metadata and record views, server-validated active dataset
+selection, and stored import information. Sprint 7 will add analytics,
+filters, charts, and comparisons. Filtered export remains planned after
+analytics. Separate-user/machine setup, cross-network access, and production
 deployment remain unverified. Automated backup scheduling is not
 implemented.
 

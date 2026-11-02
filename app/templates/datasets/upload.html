@@ -16,9 +16,10 @@
         </a>
         <nav class="dashboard-nav" aria-label="Main navigation">
             <a class="dashboard-nav-link" href="{{ url_for('home') }}">Dashboard</a>
+            <a class="dashboard-nav-link" href="{{ url_for('datasets.management') }}">Datasets</a>
             <a class="dashboard-nav-link active" href="{{ url_for('datasets.upload') }}">Upload dataset</a>
             {% if current_user.role == "admin" %}
-                <a class="dashboard-nav-link" href="{{ url_for('admin.educators') }}">Educator Management</a>
+                <a class="dashboard-nav-link" href="{{ url_for('admin.educators') }}">Manage Faculty</a>
             {% endif %}
         </nav>
         <div class="dashboard-userbar">

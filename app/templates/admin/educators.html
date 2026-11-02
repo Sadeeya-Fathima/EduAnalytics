@@ -19,8 +19,9 @@
         </a>
         <nav class="dashboard-nav" aria-label="Main navigation">
             <a class="dashboard-nav-link" href="{{ url_for('home') }}">Dashboard</a>
+            <a class="dashboard-nav-link" href="{{ url_for('datasets.management') }}">Datasets</a>
             <a class="dashboard-nav-link" href="{{ url_for('datasets.upload') }}">Upload dataset</a>
-            <a class="dashboard-nav-link active" href="{{ url_for('admin.educators') }}">Educator Management</a>
+            <a class="dashboard-nav-link active" href="{{ url_for('admin.educators') }}">Manage Faculty</a>
         </nav>
         <div class="dashboard-userbar">
             <div class="user-summary">
@@ -58,9 +59,7 @@
         <section class="card">
             <div class="card-heading">
                 <h2>Create Educator Account</h2>
-                <p class="section-description">
-                    Enter the educator's details and assign an institution.
-                </p>
+                <p class="section-description">Create an educator account for your institution.</p>
             </div>
 
             {% if institutions %}
@@ -98,16 +97,10 @@
                                    maxlength="100" placeholder="e.g. Lecturer">
                         </div>
 
-                        <div class="field">
-                            <label for="institution_id">Institution *</label>
-                            <select id="institution_id" name="institution_id" required>
-                                <option value="">Select an institution</option>
-                                {% for institution in institutions %}
-                                    <option value="{{ institution.id }}">
-                                        {{ institution.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+                        <div class="field institution-context-field">
+                            <label>Institution</label>
+                            <input type="hidden" id="institution_id" name="institution_id" value="{{ current_user.institution_id }}">
+                            <div class="institution-context"><span class="institution-context-dot"></span><strong>{{ current_user.institution.name }}</strong><small>All educators are assigned here</small></div>
                         </div>
 
                         <div class="field">
@@ -156,7 +149,7 @@
                                 <th scope="col">User ID</th>
                                 <th scope="col">Name</th>
                                 <th scope="col">Email</th>
-                                <th scope="col">Institution ID</th>
+                                <th scope="col">Institution</th>
                                 <th scope="col">Status</th>
                                 <th scope="col">Actions</th>
                             </tr>
@@ -169,7 +162,7 @@
                                         {{ educator.first_name }} {{ educator.last_name }}
                                     </td>
                                     <td>{{ educator.email }}</td>
-                                    <td>{{ educator.institution_id }}</td>
+                                    <td>{{ educator.institution.name }}</td>
                                     <td>
                                         <span class="status {{ educator.status }}">
                                             {{ educator.status }}

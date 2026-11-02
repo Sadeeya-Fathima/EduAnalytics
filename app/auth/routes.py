@@ -35,5 +35,6 @@ def logout():
         logout_user()
         session.pop("dataset_upload", None)
         session.pop("dataset_preview_token", None)
+        session.pop("active_dataset_id", None)
         flash("You have been logged out.", "success")
     return redirect(url_for("auth.login"))

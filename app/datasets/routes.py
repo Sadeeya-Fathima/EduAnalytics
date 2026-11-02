@@ -10,11 +10,47 @@ from flask_login import current_user
 from app.auth.decorators import role_required
 from app.datasets import datasets_bp
 from app.extensions import db
-from app.models import Dataset, StudentRecord
+from app.models import Dataset, StudentRecord, User
 
 MAX_CSV_ROWS = 10_000
 MAX_FIELD_LENGTH = 255
 _PREVIEW_STORE = {}
+
+
+def accessible_datasets_for_current_user():
+    """Return datasets belonging to the signed-in user's institution."""
+    return (
+        Dataset.query
+        .join(Dataset.uploader)
+        .filter(User.institution_id == current_user.institution_id)
+        .order_by(Dataset.created_at.desc(), Dataset.id.desc())
+    )
+
+
+def accessible_dataset_or_404(dataset_id):
+    """Return an institution-scoped dataset or hide it with a 404."""
+    from flask import abort
+
+    dataset = accessible_datasets_for_current_user().filter(Dataset.id == dataset_id).first()
+    if dataset is None:
+        abort(404)
+    return dataset
+
+
+def active_dataset_for_current_user():
+    """Return the session-selected dataset if it remains accessible."""
+    dataset_id = session.get("active_dataset_id")
+    if dataset_id is None:
+        return None
+    try:
+        dataset_id = int(dataset_id)
+    except (TypeError, ValueError):
+        session.pop("active_dataset_id", None)
+        return None
+    dataset = accessible_datasets_for_current_user().filter(Dataset.id == dataset_id).first()
+    if dataset is None:
+        session.pop("active_dataset_id", None)
+    return dataset
 
 
 def _column_configuration(metadata):
@@ -35,6 +71,42 @@ def _column_configuration(metadata):
 def _current_preview():
     token = session.get("dataset_preview_token")
     return _PREVIEW_STORE.get(token) if token else None
+
+
+@datasets_bp.route("", methods=["GET"])
+@role_required("admin", "educator")
+def management():
+    datasets = accessible_datasets_for_current_user().all()
+    active_dataset = active_dataset_for_current_user()
+    return render_template("datasets/management.html", datasets=datasets, active_dataset=active_dataset)
+
+
+@datasets_bp.route("/<int:dataset_id>", methods=["GET"])
+@role_required("admin", "educator")
+def detail(dataset_id):
+    dataset = accessible_dataset_or_404(dataset_id)
+    records = (
+        StudentRecord.query
+        .filter_by(dataset_id=dataset.id)
+        .order_by(StudentRecord.student)
+        .all()
+    )
+    return render_template(
+        "datasets/detail.html",
+        dataset=dataset,
+        records=records,
+        record_count=len(records),
+        active_dataset=active_dataset_for_current_user(),
+    )
+
+
+@datasets_bp.route("/<int:dataset_id>/select", methods=["POST"])
+@role_required("admin", "educator")
+def select(dataset_id):
+    dataset = accessible_dataset_or_404(dataset_id)
+    session["active_dataset_id"] = dataset.id
+    flash(f"{dataset.name} is now the active dataset.", "success")
+    return redirect(url_for("datasets.detail", dataset_id=dataset.id))
 
 
 def _validate_csv(file_storage, metadata):

@@ -5,7 +5,7 @@ import os
 from flask import Flask, render_template
 from werkzeug.exceptions import RequestEntityTooLarge
 from flask_wtf.csrf import CSRFProtect
-from flask_login import login_required
+from flask_login import current_user, login_required
 
 from app.extensions import db, login_manager
 
@@ -72,6 +72,18 @@ def create_app(test_config=None):
         flash("This CSV file is too large. Please upload a file no larger than 5 MiB.", "error")
         return redirect(url_for("datasets.upload"))
 
+    @app.errorhandler(403)
+    def handle_forbidden(error):
+        return render_template("errors/403.html"), 403
+
+    @app.errorhandler(404)
+    def handle_not_found(error):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(405)
+    def handle_method_not_allowed(error):
+        return render_template("errors/405.html"), 405
+
     from app import models  # Register the models with SQLAlchemy
     from app.auth import auth_bp
     from app.admin import admin_bp
@@ -91,6 +103,21 @@ def create_app(test_config=None):
     @app.route("/")
     @login_required
     def home():
-        return render_template("home.html")
+        from app.datasets.routes import accessible_datasets_for_current_user
+        from app.models import Dataset, StudentRecord, User
+
+        dataset_query = accessible_datasets_for_current_user()
+        dataset_count = dataset_query.count()
+        datasets = dataset_query.limit(6).all()
+        faculty_count = User.query.filter_by(institution_id=current_user.institution_id, role="educator", status="active").count()
+        student_count = (
+            db.session.query(db.func.count(StudentRecord.student))
+            .join(StudentRecord.dataset)
+            .join(Dataset.uploader)
+            .filter(User.institution_id == current_user.institution_id)
+            .scalar()
+            or 0
+        )
+        return render_template("home.html", datasets=datasets, dataset_count=dataset_count, faculty_count=faculty_count, student_count=student_count)
 
     return app

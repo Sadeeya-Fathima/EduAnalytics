@@ -1110,3 +1110,8 @@ tbody tr:hover {
     left: 20px;
   }
 }
+.institution-context-field { align-self: stretch; }
+.institution-context { display: grid; grid-template-columns: auto 1fr; gap: 3px 9px; align-items: center; min-height: 44px; padding: 9px 12px; border: 1px solid #d5dfec; border-radius: 8px; background: #f7f9fc; }
+.institution-context-dot { grid-row: span 2; width: 9px; height: 9px; border-radius: 50%; background: #26a269; box-shadow: 0 0 0 4px rgb(38 162 105 / 12%); }
+.institution-context strong { color: #284a73; font-size: .82rem; }
+.institution-context small { color: #8a9ab0; font-size: .68rem; }
