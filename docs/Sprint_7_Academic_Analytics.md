@@ -183,16 +183,25 @@ When the imported dataset uses these codes:
 
 ### 3.5 Phase 1 Compatibility Verification
 
-The following remain pending until the actual source code and stored data are inspected:
+Phase 1 review completed against the current checkout on 4 November 2026:
 
-- [ ] Confirm the `StudentRecord` identifier field.
-- [ ] Confirm the stored study-time representation.
-- [ ] Confirm absence units and metadata.
-- [ ] Confirm the configured grade scale.
-- [ ] Confirm assessment-label storage.
-- [ ] Confirm how missing values are represented.
-- [ ] Confirm the current authorization rules.
-- [ ] Confirm the existing charting library and JavaScript conventions.
+- [x] `StudentRecord.student` is the internal integer primary key; imported
+      records receive globally increasing IDs. `student_name` is a required
+      display field and must not be treated as a unique identifier.
+- [x] `studytime` is stored as a nullable `Float`, but the database does not
+      store source-unit metadata. Analytics must therefore use dataset/source
+      context and must not assume UCI values are exact hours.
+- [x] `absences` is stored as a nullable integer. Absence units are not stored
+      separately and must remain documented or unavailable when unverified.
+- [x] `Dataset.grade_scale_max` stores the configured grade scale.
+- [x] `Dataset.g1_label`, `g2_label`, and `g3_label` store assessment labels.
+- [x] Missing optional values are persisted as `NULL`; required G3 values are
+      validated before import.
+- [x] Existing authorization is institution-scoped through the accessible
+      dataset query and applies to the active session-selected dataset.
+- [x] No charting library is currently declared in `requirements.txt`; the
+      dashboard implementation must select and add only the approved existing
+      frontend charting approach, if one is not already bundled.
 
 No database schema change is approved by this document.
 
@@ -591,7 +600,7 @@ Implement one phase at a time. Review the current code before changing models, r
 
 | Phase | Work | Expected outcome | Status |
 |---|---|---|---|
-| 1. Code review and architecture | Inspect models, importer, authorization, selected dataset, metadata, dependencies and charting. Finalize compatibility and calculation decisions. | Approved implementation design. | Planned |
+| 1. Code review and architecture | Inspect models, importer, authorization, selected dataset, metadata, dependencies and charting. Finalize compatibility and calculation decisions. | Approved implementation design. | Complete — compatibility review recorded in Section 3.5. |
 | 2. Dataset retrieval and preprocessing | Retrieve the selected dataset securely, prepare temporary analysis input and calculate quality metrics. | Tested analysis input and data-quality results. | Planned |
 | 3. Descriptive statistics | Implement summary statistics and grade distribution. | Independently tested calculation service. | Planned |
 | 4. Advanced EDA | Implement assessment comparisons, study-time analysis, absence analysis and correlations. | Tested analysis for available fields. | Planned |
@@ -603,7 +612,7 @@ Implement one phase at a time. Review the current code before changing models, r
 
 | Date | Phase | Changes made | Tests and results | Issues / next action |
 |---|---|---|---|---|
-| — | — | No Sprint 7 implementation recorded yet. | — | Begin Phase 1 code review. |
+| 2026-11-04 | Phase 1 — Code review and architecture | Verified model fields, import ID strategy, missing-value representation, dataset authorization, metadata storage, and charting dependencies. No schema change approved. | Repository inspection completed; no analytics tests executed yet. | Begin Phase 2 retrieval and preprocessing design. |
 
 ---
 
@@ -982,7 +991,7 @@ All applicable automated tests must pass, existing functionality must remain int
 
 | Phase | Description | Status | Evidence |
 |---|---|---|---|
-| 1 | Code review and architecture | Planned | Pending |
+| 1 | Code review and architecture | Complete | Section 3.5 and Phase Update Record; repository inspection completed 2026-11-04 |
 | 2 | Dataset retrieval and preprocessing | Planned | Pending |
 | 3 | Descriptive statistics and grade distribution | Planned | Pending |
 | 4 | Advanced EDA | Planned | Pending |
