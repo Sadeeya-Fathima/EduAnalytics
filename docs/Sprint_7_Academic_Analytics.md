@@ -2,11 +2,11 @@
 
 **Project:** EduAnalytics — Student Academic Performance Analytics Platform  
 **Sprint:** 7  
-**Status:** Planned — Revised Draft  
-**Document Version:** 1.1  
+**Status:** Final review — implementation complete; manual acceptance verified
+**Document Version:** 1.2
 **Previous Sprint:** Sprint 6 — Dataset Management  
 **Next Milestone:** Filtered Analytics Export  
-**Revision Date:** 4 November 2026
+**Revision Date:** 7 November 2026
 
 > **Living document:** Update phase statuses, technical decisions, test evidence and known issues as Sprint 7 progresses. A task must only be marked complete after implementation and verification against the current project checkout.
 
@@ -181,9 +181,11 @@ When the imported dataset uses these codes:
 - Do not calculate average study hours or interpret category codes as exact hours.
 - Do not calculate Pearson correlation using those codes as if they were exact hours.
 
-### 3.5 Phase 1 Compatibility Verification
+### 3.5 Compatibility Verification
 
-Phase 1 review completed against the current checkout on 4 November 2026:
+The Phase 1 code review and architecture verification included a compatibility
+review of the current checkout on 4 November 2026. This subsection provides
+the technical compatibility evidence for Phase 1:
 
 - [x] `StudentRecord.student` is the internal integer primary key; imported
       records receive globally increasing IDs. `student_name` is a required
@@ -502,6 +504,20 @@ No AI-generated recommendations or interventions are included.
 
 Interactive filters are included in Sprint 7.
 
+### 6.0 Approved Feature Freeze
+
+The Phase 6 filter panel implements five optional, dataset-aware criteria:
+
+- Final Assessment (G3) minimum and maximum.
+- Assessment 1 (G1) minimum and maximum when G1 exists.
+- Assessment 2 (G2) minimum and maximum when G2 exists.
+- Study Time as categorical selection or verified numerical range.
+- Absences as selectable categories.
+
+The panel is titled **Filter & Explore**, keeps filter values in the URL, and
+displays an active-filter summary, matching-record count, Apply Filters, and
+Clear All Filters controls. Filtered CSV export remains out of scope.
+
 ### 6.1 Supported Filters
 
 | Filter | Availability |
@@ -509,8 +525,8 @@ Interactive filters are included in Sprint 7.
 | G3 range | Always |
 | G1 range | When G1 exists |
 | G2 range | When G2 exists |
-| Study-time range/category | When usable study-time data exists |
-| Absence range | When usable absence data exists |
+| Study-time category/range | When study-time data exists |
+| Absence category | When absence data exists |
 
 ### 6.2 Combined Filter Logic
 
@@ -601,18 +617,113 @@ Implement one phase at a time. Review the current code before changing models, r
 | Phase | Work | Expected outcome | Status |
 |---|---|---|---|
 | 1. Code review and architecture | Inspect models, importer, authorization, selected dataset, metadata, dependencies and charting. Finalize compatibility and calculation decisions. | Approved implementation design. | Complete — compatibility review recorded in Section 3.5. |
-| 2. Dataset retrieval and preprocessing | Retrieve the selected dataset securely, prepare temporary analysis input and calculate quality metrics. | Tested analysis input and data-quality results. | Planned |
-| 3. Descriptive statistics | Implement summary statistics and grade distribution. | Independently tested calculation service. | Planned |
-| 4. Advanced EDA | Implement assessment comparisons, study-time analysis, absence analysis and correlations. | Tested analysis for available fields. | Planned |
-| 5. Dashboard interface | Integrate KPI cards, detailed statistics, charts and findings. | Responsive Academic Analytics Dashboard. | Planned |
-| 6. Interactive filters | Implement filters incrementally, combined AND behaviour and reset. | Consistent filtered analytics. | Planned |
-| 7. Integration and verification | Run statistical, security, lifecycle, UI and regression tests. Update documentation. | Verified Sprint 7 release candidate. | Planned |
+| 2. Dataset retrieval and preprocessing | Retrieve the selected dataset securely, prepare temporary analysis input and calculate quality metrics. | Tested analysis input and data-quality results. | Complete — implemented in `app/analytics/services.py` with preprocessing tests. |
+| 3. Descriptive statistics | Implement summary statistics and grade distribution. | Independently tested calculation service. | Complete — implemented in `app/analytics/services.py` with statistical tests. |
+| 4. Advanced EDA | Implement assessment comparisons, study-time analysis, absence analysis and correlations. | Tested analysis for available fields. | Complete — implemented in `app/analytics/services.py` with advanced-analysis tests. |
+| 5. Dashboard interface | Integrate overview KPI cards, primary charts, short explanations, detailed statistics, and findings. | Responsive overview-first Academic Analytics Dashboard. | Complete — implemented in `app/analytics/routes.py`, templates, and static assets. |
+| 6. Interactive filters | Implement filters incrementally, combined AND behaviour and reset. | Consistent filtered analytics. | Complete — implemented with server-validated GET filters and reset behavior. |
+| 7. Integration and verification | Run statistical, security, lifecycle, UI and regression tests. Update documentation. | Verified Sprint 7 release candidate. | Complete — automated verification and manual acceptance passed. |
 
 ### 8.1 Phase Update Record
 
 | Date | Phase | Changes made | Tests and results | Issues / next action |
 |---|---|---|---|---|
-| 2026-11-04 | Phase 1 — Code review and architecture | Verified model fields, import ID strategy, missing-value representation, dataset authorization, metadata storage, and charting dependencies. No schema change approved. | Repository inspection completed; no analytics tests executed yet. | Begin Phase 2 retrieval and preprocessing design. |
+| 2026-11-04 | Phase 1 — Code review and architecture | Verified model fields, import ID strategy, missing-value representation, dataset authorization, metadata storage, and charting dependencies. No schema change approved. | Repository inspection and compatibility verification completed; implementation tests began in Phase 2. | Phase 1 complete; begin Phase 2 retrieval and preprocessing design. |
+| 2026-11-04 | Phase 2 — Dataset retrieval and preprocessing | Added request-scoped retrieval and preprocessing services with dataset-scoped queries, numeric coercion, optional-field handling, and dataset-level quality metrics. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_preprocessing.py` — 2 passed. | Phase 2 complete; begin Phase 3 descriptive statistics and grade distribution. |
+| 2026-11-04 | Phase 3 — Descriptive statistics and grade distribution | Added G3 summary statistics, population standard deviation, linear-interpolation quartiles, configured-scale grade bands, counts, percentages, and empty-result handling. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py` — 5 passed. | Phase 3 complete; begin Phase 4 advanced exploratory data analysis. |
+| 2026-11-04 | Phase 4 — Advanced exploratory data analysis | Added assessment summaries and paired differences, categorical/numerical study-time grouping, absence groups, Pearson safeguards, and deterministic non-causal findings. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py` — 8 passed. | Phase 4 complete; begin Phase 5 dashboard interface and visualization. |
+| 2026-11-04 | Phase 5 — Dashboard interface and visualization | Added authenticated dataset-scoped analytics routes, dashboard navigation links, KPI/statistics sections, responsive Plotly charts, metadata, findings, and empty optional-analysis states. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py tests/test_analytics_dashboard.py` — 10 passed. | Phase 5 complete; begin Phase 6 interactive filters. |
+| 2026-11-06 | Phase 5 UX refinement — overview-first dashboard | Froze a teacher-friendly single-page layout: selected dataset, class overview, four KPI cards, grade distribution, assessment comparison, study-time analysis, attendance analysis, important findings, and expandable advanced statistics/quality details. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_dashboard.py tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py` — 10 passed. | Preserve the overview-first flow while implementing Phase 6 filters. |
+| 2026-11-06 | Phase 5 visual refinement — production-grade charts | Added restrained multi-color chart palettes, rounded chart panels and bars, stronger hover contrast, clearer hover content, responsive spacing, and readable chart fallback states. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_dashboard.py tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py` — 10 passed. | Preserve visual hierarchy while implementing Phase 6 filters. |
+| 2026-11-06 | Phase 5 chart clarity refinement — grade distribution | Added the configured final-assessment label, explicit grade intervals on the horizontal axis, and student percentages to distribution hover labels. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_dashboard.py tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py` — 10 passed. | Keep chart labels self-explanatory during Phase 6 work. |
+| 2026-11-06 | Phase 5 advanced assessment relationships | Added optional G1-vs-G3 and G2-vs-G3 scatter plots for paired valid assessments, with configured labels and identity-free hover values. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_dashboard.py tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py tests/test_analytics_scatter.py` — 12 passed. | Keep scatter plots in Advanced Analysis; begin Phase 6 filters. |
+| 2026-11-06 | Phase 6 — Interactive filters | Added server-validated G1/G2/G3, study-time, category, and absence filters with AND logic, filtered analytics recalculation, matching-record count, reset behavior, missing-value exclusion, and unchanged dataset-quality metrics. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_dashboard.py tests/test_analytics_filters.py tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py tests/test_analytics_scatter.py` — 18 passed. | Phase 6 complete; begin Phase 7 integration and verification. |
+| 2026-11-06 | Phase 6 filter safety and attendance UX | Added client-side range constraints so invalid minimum/maximum combinations cannot be selected, hidden inline validation until an error occurs, removed obsolete absence-selection instructions, and styled the compact native multi-select absence dropdown. Server-side validation remains the backstop for direct or crafted requests. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_dashboard.py tests/test_analytics_filters.py tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py tests/test_analytics_scatter.py` — 18 passed. | Continue Phase 7 integration and verification; do not push until Sprint 7 is complete. |
+| 2026-11-06 | Phase 6 UI refinement — assessment scatter plots | Added consistent spacing between the section heading and scatter cards, balanced card gaps, larger plot areas, and contrasting teal/amber point colors with white outlines. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_dashboard.py tests/test_analytics_scatter.py tests/test_analytics_filters.py tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py` — 18 passed. | Preserve chart readability during Phase 7 verification. |
+| 2026-11-06 | Phase 6 UX refinement — filters and scatter colors | Restored the simple solid teal/orange assessment scatter styling and reorganized filters into grouped range controls, plain-language fields, categorical study-time selection, and a clear-all action. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_dashboard.py tests/test_analytics_scatter.py tests/test_analytics_filters.py tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py` — 18 passed. | Preserve user-friendly controls during Phase 7 verification. |
+| 2026-11-06 | Phase 6 feature-freeze alignment | Reinstated the approved five-filter scope: G3, available G1/G2, Study Time category/range, and multi-select Absence categories. Added inclusive grade validation, multi-value category filtering, and dataset-aware control rendering. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_dashboard.py tests/test_analytics_filters.py tests/test_analytics_scatter.py tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py` — 18 passed. | Preserve the approved feature freeze during Phase 7 verification. |
+| 2026-11-06 | Phase 6 filter UX — assessment selector | Added a configured-label assessment dropdown. Teachers select G1, G2, or G3 first, then use the corresponding minimum and maximum dropdowns. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_dashboard.py tests/test_analytics_filters.py tests/test_analytics_scatter.py tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py` — 18 passed. | Preserve simple assessment selection during Phase 7 verification. |
+| 2026-11-06 | Phase 6 filter UX — production-grade controls | Fixed hidden assessment control layout, compacted range controls, redesigned attendance selection as responsive checkbox cards, improved selected-state styling, and added mobile stacking. | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_analytics_dashboard.py tests/test_analytics_filters.py tests/test_analytics_scatter.py tests/test_analytics_preprocessing.py tests/test_analytics_statistics.py tests/test_analytics_advanced.py` — 18 passed. | Preserve the refined filter UX during Phase 7 verification. |
+| 2026-11-07 | Phase 6 filter UX — final control consistency | Restored assessment-label names in the active-filter summary, preserved selected numeric dropdown values including decimal study-time values, removed obsolete absence instructions, and refined the compact absence multi-select dropdown. | Full test suite — 154 passed. | Phase 6 remains complete; begin Phase 7 integration and verification. |
+
+### 8.2 Phase Checklists
+
+Each phase uses the same completion format. A phase is complete only when all
+applicable checklist items are checked and its evidence is recorded above.
+
+#### Phase 1 — Code Review and Architecture
+
+- [x] Existing models, importer, authorization, active-dataset selection, and metadata were inspected.
+- [x] Identifier, missing-value, grade-scale, assessment-label, unit, and charting constraints were documented.
+- [x] No schema change was approved without a technical justification.
+- [x] Phase 1 findings and next action were recorded in the phase update table.
+
+#### Phase 2 — Dataset Retrieval and Preprocessing
+
+- [x] Retrieval is restricted to the selected dataset ID.
+- [x] Analysis input is temporary and request-scoped.
+- [x] Numeric values are coerced safely without replacing missing values with zero.
+- [x] Optional missing values remain eligible for unrelated analyses.
+- [x] Dataset-level quality metrics are calculated independently from future filters.
+- [x] Dataset isolation and quality behavior are covered by passing tests.
+- [x] Phase 2 findings and next action were recorded in the phase update table.
+
+#### Phase 3 — Descriptive Statistics and Grade Distribution
+
+- [x] Summary statistics are implemented using the approved statistical conventions.
+- [x] Grade bands and percentages are implemented for the configured scale.
+- [x] Empty and unavailable results are handled safely.
+- [x] Independent statistical tests pass.
+- [x] Phase evidence and next action are recorded.
+
+#### Phase 4 — Advanced Exploratory Data Analysis
+
+- [x] Assessment comparisons are implemented with paired-value rules.
+- [x] Study-time and absence analyses respect verified units and availability.
+- [x] Correlation safeguards and deterministic findings are implemented.
+- [x] Independent advanced-analysis tests pass.
+- [x] Phase evidence and next action are recorded.
+
+#### Phase 5 — Dashboard Interface and Visualization
+
+- [x] Authorized users can open analytics for the selected dataset.
+- [x] KPI cards, statistics, charts, findings, metadata, optional scatter plots, and empty states are displayed.
+- [x] Optional unavailable sections are hidden or clearly marked.
+- [x] Responsive layout and chart labels are implemented for manual verification.
+- [x] Phase evidence and next action are recorded.
+
+#### Phase 6 — Interactive Filters
+
+- [x] Supported filters are validated server-side.
+- [x] Multiple filters use AND logic.
+- [x] Missing values do not match an active filter.
+- [x] Filtered metrics and charts update consistently.
+- [x] Dataset-level quality metrics remain unchanged.
+- [x] Reset and empty-result behavior are verified.
+- [x] Phase evidence and next action are recorded.
+
+#### Phase 7 — Integration and Verification
+
+- [x] Analytics, authorization, isolation, lifecycle, and regression tests pass.
+- [x] Existing authentication, upload, and Dataset Management behavior remains intact.
+- [x] Documentation and manual verification evidence are complete.
+- [x] All applicable Sprint 7 acceptance criteria are checked.
+- [x] Sprint 7 is ready for its final GitHub push.
+
+### 8.3 Phase 2 — Dataset Retrieval and Preprocessing Completion
+
+Phase 2 is complete locally. The implementation is in
+`app/analytics/services.py`, with coverage in
+`tests/test_analytics_preprocessing.py`.
+
+Completed outcomes:
+
+- Retrieved records are restricted to the requested `dataset_id`.
+- Analysis input is request-scoped and represented as a temporary DataFrame.
+- Invalid numeric values become unavailable for analysis rather than zero.
+- Optional missing values do not exclude records from valid G3 analysis.
+- Dataset-level quality metrics are calculated independently from filters.
+- Dataset isolation and quality calculations are covered by two passing tests.
 
 ---
 
@@ -751,97 +862,97 @@ Sprint 7 must not be marked complete until every applicable criterion has been i
 
 ### 11.1 Dataset Retrieval and Authorization
 
-- [ ] Authorized users can open Academic Analytics.
-- [ ] A valid selected dataset is required.
-- [ ] Dataset authorization is validated server-side.
-- [ ] Analytics use only the selected dataset.
-- [ ] Dataset A never includes Dataset B records.
-- [ ] Invalid and unauthorized references are rejected.
-- [ ] Existing Dataset Management remains intact.
+- [x] Authorized users can open Academic Analytics.
+- [x] A valid selected dataset is required.
+- [x] Dataset authorization is validated server-side.
+- [x] Analytics use only the selected dataset.
+- [x] Dataset A never includes Dataset B records.
+- [x] Invalid and unauthorized references are rejected.
+- [x] Existing Dataset Management remains intact.
 
 ### 11.2 Preprocessing and Data Quality
 
-- [ ] Import rejection is distinguished from analysis exclusion.
-- [ ] Valid G3 records are counted correctly.
-- [ ] Missing values are counted correctly.
-- [ ] Optional missing values do not unnecessarily exclude valid G3 records.
-- [ ] Each analysis uses its own eligibility rules.
-- [ ] Empty and invalid values are handled safely.
-- [ ] Original SQLite records remain unchanged.
+- [x] Import rejection is distinguished from analysis exclusion.
+- [x] Valid G3 records are counted correctly.
+- [x] Missing values are counted correctly.
+- [x] Optional missing values do not unnecessarily exclude valid G3 records.
+- [x] Each analysis uses its own eligibility rules.
+- [x] Empty and invalid values are handled safely.
+- [x] Original SQLite records remain unchanged.
 
 ### 11.3 Descriptive Statistics
 
-- [ ] Valid G3 count is correct.
-- [ ] Average G3 is correct.
-- [ ] Median G3 is correct.
-- [ ] Minimum and maximum G3 are correct.
-- [ ] Population standard deviation is correct.
-- [ ] Q1 and Q3 use linear interpolation.
-- [ ] Empty results are represented as unavailable.
+- [x] Valid G3 count is correct.
+- [x] Average G3 is correct.
+- [x] Median G3 is correct.
+- [x] Minimum and maximum G3 are correct.
+- [x] Population standard deviation is correct.
+- [x] Q1 and Q3 use linear interpolation.
+- [x] Empty results are represented as unavailable.
 
 ### 11.4 Grade Distribution
 
-- [ ] Grade bands respect the configured scale.
-- [ ] Decimal values are assigned to exactly one band.
-- [ ] Group counts match valid G3 records.
-- [ ] Percentages are correct.
-- [ ] Chart labels and grade units are accurate.
+- [x] Grade bands respect the configured scale.
+- [x] Decimal values are assigned to exactly one band.
+- [x] Group counts match valid G3 records.
+- [x] Percentages are correct.
+- [x] Chart labels and grade units are accurate.
 
 ### 11.5 Assessment Comparison
 
-- [ ] Available assessment means are correct.
-- [ ] Missing assessment columns do not break the dashboard.
-- [ ] Individual differences use paired valid records.
-- [ ] Mean differences between assessment averages are not mislabelled as individual improvement.
+- [x] Available assessment means are correct.
+- [x] Missing assessment columns do not break the dashboard.
+- [x] Individual differences use paired valid records.
+- [x] Mean differences between assessment averages are not mislabelled as individual improvement.
 
 ### 11.6 Study-Time and Absence Analysis
 
-- [ ] Analysis appears only when usable data exists.
-- [ ] Categorical study-time codes are not treated as exact hours.
-- [ ] Group counts and average G3 values are correct.
-- [ ] Scatter plots use paired valid observations.
-- [ ] Correlation safeguards are applied.
-- [ ] Missing and constant values are handled safely.
+- [x] Analysis appears only when usable data exists.
+- [x] Categorical study-time codes are not treated as exact hours.
+- [x] Group counts and average G3 values are correct.
+- [x] Scatter plots use paired valid observations.
+- [x] Correlation safeguards are applied.
+- [x] Missing and constant values are handled safely.
 
 ### 11.7 Correlation and Findings
 
-- [ ] Correlation requires at least three paired observations.
-- [ ] Zero-variance variables return unavailable results.
-- [ ] Correlation findings require at least ten paired observations.
-- [ ] Correlation thresholds are applied consistently.
-- [ ] Group findings apply the documented minimum counts and grade-point difference.
-- [ ] Findings do not imply causation.
-- [ ] Unavailable findings are suppressed.
+- [x] Correlation requires at least three paired observations.
+- [x] Zero-variance variables return unavailable results.
+- [x] Correlation findings require at least ten paired observations.
+- [x] Correlation thresholds are applied consistently.
+- [x] Group findings apply the documented minimum counts and grade-point difference.
+- [x] Findings do not imply causation.
+- [x] Unavailable findings are suppressed.
 
 ### 11.8 Interactive Filters
 
-- [ ] Available filters are displayed correctly.
-- [ ] Combined filters use AND logic.
-- [ ] Missing values do not match active filters.
-- [ ] Dataset-level quality metrics remain unchanged by filters.
-- [ ] Filtered record counts are correct.
-- [ ] Metrics and charts update consistently.
-- [ ] Reset Filters restores the original analysis.
-- [ ] Empty results display a useful state.
-- [ ] Filters cannot access another dataset.
+- [x] Available filters are displayed correctly.
+- [x] Combined filters use AND logic.
+- [x] Missing values do not match active filters.
+- [x] Dataset-level quality metrics remain unchanged by filters.
+- [x] Filtered record counts are correct.
+- [x] Metrics and charts update consistently.
+- [x] Reset Filters restores the original analysis.
+- [x] Empty results display a useful state.
+- [x] Filters cannot access another dataset.
 
 ### 11.9 Temporary Analysis and Integrity
 
-- [ ] Analysis results are not permanently stored.
-- [ ] Student records and DataFrames are not stored in Flask sessions.
-- [ ] Request-scoped temporary objects are discarded after processing.
-- [ ] Separate users and Waitress workers remain isolated.
-- [ ] Original imported records remain unchanged.
+- [x] Analysis results are not permanently stored.
+- [x] Student records and DataFrames are not stored in Flask sessions.
+- [x] Request-scoped temporary objects are discarded after processing.
+- [x] Separate users and Waitress workers remain isolated.
+- [x] Original imported records remain unchanged.
 
 ### 11.10 Regression and Documentation
 
-- [ ] Authentication tests pass.
-- [ ] Authorization tests pass.
-- [ ] CSV upload and validation tests pass.
-- [ ] Dataset Management tests pass.
-- [ ] Sprint 7 analytical tests pass.
-- [ ] README and project documentation are updated.
-- [ ] Manual verification evidence is recorded.
+- [x] Authentication tests pass.
+- [x] Authorization tests pass.
+- [x] CSV upload and validation tests pass.
+- [x] Dataset Management tests pass.
+- [x] Sprint 7 analytical tests pass.
+- [x] README and project documentation are updated.
+- [x] Manual verification evidence is recorded.
 
 ---
 
@@ -883,66 +994,68 @@ Use suitable floating-point tolerances in automated tests.
 
 ### 12.2 Preprocessing Tests
 
-- [ ] Valid dataset.
-- [ ] Missing required identifier.
-- [ ] Missing required G3.
-- [ ] Invalid numeric values.
-- [ ] Negative study-time values.
-- [ ] Negative absence values.
-- [ ] Grades outside configured scale.
-- [ ] Missing G1/G2.
-- [ ] Missing study time.
-- [ ] Missing absences.
-- [ ] Empty dataset.
-- [ ] Stored records with optional invalid values.
+- [x] Valid dataset.
+- [x] Missing required identifier.
+- [x] Missing required G3.
+- [x] Invalid numeric values.
+- [x] Negative study-time values.
+- [x] Negative absence values.
+- [x] Grades outside configured scale.
+- [x] Missing G1/G2.
+- [x] Missing study time.
+- [x] Missing absences.
+- [x] Empty dataset.
+- [x] Stored records with optional invalid values.
 
 ### 12.3 Statistical Tests
 
-- [ ] Mean, median, minimum and maximum.
-- [ ] Population standard deviation.
-- [ ] Linear-interpolation quartiles.
-- [ ] Grade distribution counts and percentages.
-- [ ] Assessment averages.
-- [ ] Paired assessment differences.
-- [ ] Group averages.
-- [ ] Pearson correlation.
-- [ ] Zero-variance correlation handling.
-- [ ] Insufficient paired observations.
-- [ ] Floating-point tolerance.
+- [x] Mean, median, minimum and maximum.
+- [x] Population standard deviation.
+- [x] Linear-interpolation quartiles.
+- [x] Grade distribution counts and percentages.
+- [x] Assessment averages.
+- [x] Paired assessment differences.
+- [x] Group averages.
+- [x] Pearson correlation.
+- [x] Zero-variance correlation handling.
+- [x] Insufficient paired observations.
+- [x] Floating-point tolerance.
 
 ### 12.4 Dashboard and Filter Tests
 
-- [ ] All supported columns available.
-- [ ] G1/G2 unavailable.
-- [ ] Study time unavailable.
-- [ ] Absences unavailable.
-- [ ] Optional values missing in individual records.
-- [ ] Each filter independently.
-- [ ] Multiple filters together.
-- [ ] AND logic.
-- [ ] Missing values under active filters.
-- [ ] Reset Filters.
-- [ ] Empty filter results.
-- [ ] Dataset-level quality remains unchanged.
-- [ ] Filtered metrics and charts match independently calculated results.
+- [x] All supported columns available.
+- [x] G1/G2 unavailable.
+- [x] Study time unavailable.
+- [x] Absences unavailable.
+- [x] Optional values missing in individual records.
+- [x] Each filter independently.
+- [x] Multiple filters together.
+- [x] AND logic.
+- [x] Missing values under active filters.
+- [x] Reset Filters.
+- [x] Empty filter results.
+- [x] Dataset-level quality remains unchanged.
+- [x] Filtered metrics and charts match independently calculated results.
 
 ### 12.5 Security and Lifecycle Tests
 
-- [ ] Unauthenticated analytics access.
-- [ ] Unauthorized dataset access.
-- [ ] Invalid dataset identifier.
-- [ ] Dataset switching.
-- [ ] Dataset isolation.
-- [ ] Separate user sessions.
-- [ ] Temporary analysis cleanup.
-- [ ] Original SQLite dataset unchanged.
-- [ ] Existing full regression suite.
+- [x] Unauthenticated analytics access.
+- [x] Unauthorized dataset access.
+- [x] Invalid dataset identifier.
+- [x] Dataset switching.
+- [x] Dataset isolation.
+- [x] Separate user sessions.
+- [x] Temporary analysis cleanup.
+- [x] Original SQLite dataset unchanged.
+- [x] Existing full regression suite.
 
 ### 12.6 Test Evidence Record
 
 | Date | Command / test group | Result | Notes |
 |---|---|---|---|
-| — | Not yet executed | Pending | Begin after implementation. |
+| 2026-11-07 | Full pytest regression suite | 155 passed | Automated analytics, authentication, authorization, lifecycle, upload, and Dataset Management coverage passed, including dedicated missing-identifier preprocessing coverage. |
+| 2026-11-07 | Manual browser verification | Passed | Admin workflow verified from `/datasets` → `/dataset/1` → `/analytics/1`; invalid dataset returned the branded 404 page; dashboard, charts, filters, reset, responsive layout, isolation, lifecycle, and regression workflows confirmed. |
+| 2026-11-07 | Security and lifecycle test groups | 67 passed | Analytics dashboard, preprocessing, authorization, and developer-security tests passed, including unauthenticated access, role boundaries, dataset isolation, session behavior, and protected developer routes. |
 
 Previous sprint test results must not be recorded as Sprint 7 test evidence.
 
@@ -992,12 +1105,12 @@ All applicable automated tests must pass, existing functionality must remain int
 | Phase | Description | Status | Evidence |
 |---|---|---|---|
 | 1 | Code review and architecture | Complete | Section 3.5 and Phase Update Record; repository inspection completed 2026-11-04 |
-| 2 | Dataset retrieval and preprocessing | Planned | Pending |
-| 3 | Descriptive statistics and grade distribution | Planned | Pending |
-| 4 | Advanced EDA | Planned | Pending |
-| 5 | Dashboard interface and visualization | Planned | Pending |
-| 6 | Interactive filters | Planned | Pending |
-| 7 | Integration and verification | Planned | Pending |
+| 2 | Dataset retrieval and preprocessing | Complete | `app/analytics/services.py`; `tests/test_analytics_preprocessing.py`; 2 tests passed 2026-11-04 |
+| 3 | Descriptive statistics and grade distribution | Complete | `app/analytics/services.py`; `tests/test_analytics_statistics.py`; 5 focused tests passed 2026-11-04 |
+| 4 | Advanced EDA | Complete | `app/analytics/services.py`; `tests/test_analytics_advanced.py`; 8 focused tests passed 2026-11-04 |
+| 5 | Dashboard interface and visualization | Complete | `app/analytics/routes.py`, `app/templates/analytics/dashboard.html`, static assets, and 10 focused tests passed 2026-11-04 |
+| 6 | Interactive filters | Complete | `app/analytics/services.py`, analytics dashboard filter form, label-aware summaries, range constraints, absence multi-select dropdown, and full suite: 154 tests passed 2026-11-07 |
+| 7 | Integration and verification | Complete | Latest full regression suite: 157 tests passed 2026-11-07; application routes, authorization boundary, dataset isolation, lifecycle behavior, and manual browser workflow verified. |
 
 ---
 
@@ -1006,7 +1119,7 @@ All applicable automated tests must pass, existing functionality must remain int
 | Date | Change / decision | Reason | Status |
 |---|---|---|---|
 | 2026-11-04 | Initial Sprint 7 planning document created. | Establish analytics scope. | Revised |
-| 2026-11-04 | Incorporated review of schema and identifier compatibility. | Avoid unnecessary database changes. | Decision documented; code verification pending |
+| 2026-11-04 | Incorporated review of schema and identifier compatibility. | Avoid unnecessary database changes. | Code compatibility review completed and documented in Section 3.5. |
 | 2026-11-04 | Defined analysis-specific eligibility. | Avoid excluding valid records from unrelated calculations. | Defined |
 | 2026-11-04 | Selected population standard deviation and linear-interpolation quartiles. | Ensure consistent statistical results. | Defined |
 | 2026-11-04 | Defined non-overlapping decimal-grade bands for the 0–20 example scale. | Avoid ambiguous grade boundaries. | Proposed |
@@ -1015,13 +1128,17 @@ All applicable automated tests must pass, existing functionality must remain int
 | 2026-11-04 | Extended expected statistical test results. | Improve independent verification. | Defined |
 | 2026-11-04 | Moved interactive filters into Sprint 7. | Explicit revision of sprint allocation. | Approved in planning draft |
 | 2026-11-04 | Retained filtered CSV export for the subsequent milestone. | Keep Sprint 7 focused. | Defined |
+| 2026-11-07 | Phase 7 — Integration and verification | Ran the complete automated regression suite, confirmed analytics authorization and dataset isolation coverage, verified existing application behavior remains intact, and recorded the completed manual browser workflow. | 155 tests passed; manual acceptance verification recorded in Sections 11 and 12. | Complete; final review approval remains before the single GitHub push |
+| 2026-11-07 | Final regression verification | Re-ran the complete test suite after final documentation and security/error-handling updates. | 157 passed in 78.34 seconds. | Final review complete; commit and push remain approval-gated. |
 
 ---
 
-**Document status: VERSION 1.1 — REVISED PLANNING DRAFT**
+**Document status: VERSION 1.2 — IMPLEMENTATION PROGRESS UPDATE**
 
-**Implementation status: NOT STARTED**
+**Implementation status: PHASES 1–7 COMPLETE; MANUAL ACCEPTANCE VERIFIED**
 
-**Next action: Phase 1 — Code Review and Architecture Verification.**
+**Next action: Final review approval, then perform the single Sprint 7 GitHub push when approved.**
 
-No analytics code, routes, templates, database migrations or dependencies should be changed until the Phase 1 review confirms compatibility with the existing project.
+Phase 1 compatibility review is complete. Continue implementing one phase at a
+time and preserve the documented separation between analytics services, Flask
+routes, templates, and visualization code.

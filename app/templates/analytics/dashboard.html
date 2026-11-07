@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block title %}Academic Dashboard | EduAnalytics{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='analytics.css', v='3') }}">
+<script defer src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script defer src="{{ url_for('static', filename='analytics.js', v='3') }}"></script>{% endblock %}
+{% block content %}
+<div class="dashboard-shell analytics-shell">
+    <header class="dashboard-topbar"><a class="dashboard-brand" href="{{ url_for('home') }}"><img
+                src="{{ url_for('static', filename='branding/eduanalytics-emblem.png') }}"
+                alt=""><span>Edu<strong>Analytics</strong></span></a>
+        <nav class="dashboard-nav" aria-label="Main navigation"><a class="dashboard-nav-link"
+                href="{{ url_for('home') }}">Dashboard</a><a class="dashboard-nav-link"
+                href="{{ url_for('datasets.management') }}">Datasets</a>
+            <a class="dashboard-nav-link" href="{{ url_for('datasets.management') }}">Datasets</a>
+            <a class="dashboard-nav-link" href="{{ url_for('datasets.upload') }}">Upload Dataset</a>
+            <a class="dashboard-nav-link active"
+                href="{{ url_for('analytics.dataset_dashboard', dataset_id=dataset.id) }}">Academic Dashboard</a>
+        </nav>
+        <div class="dashboard-userbar">
+            <div class="user-summary"><span class="user-avatar">{{ current_user.first_name[:1] }}</span><span
+                    class="user-details"><strong>{{ current_user.first_name }} {{ current_user.last_name
+                        }}</strong><small>{{ current_user.role|capitalize }}</small></span></div>
+            <form method="POST" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token"
+                    value="{{ csrf_token() }}"><button class="logout-button" type="submit">Log out</button></form>
+        </div>
+    </header>
+    <main class="dashboard-main analytics-main">
+        <section class="dashboard-hero-card analytics-hero">
+            <div class="dashboard-hero-copy">
+                <p class="dashboard-eyebrow">Academic Performance Platform</p>
+                <h1>Academic Dashboard</h1>
+                <p>Welcome! Here's an overview of your selected dataset.</p>
+            </div><a class="secondary-action" href="{{ url_for('datasets.management') }}">← Dataset Management</a>
+        </section>
+        <section class="selected-dataset-card">
+            <div>
+                <p class="dashboard-eyebrow">Selected dataset <span class="status-pill">Loaded</span></p>
+                <h2>{{ dataset.name }}</h2>
+                <p>{{ dataset.subject }}{% if dataset.class_section %} · {{ dataset.class_section }}{% endif %}{% if
+                    dataset.academic_year %} · Academic Year {{ dataset.academic_year }}{% endif %}</p>
+            </div>
+            <dl>
+                <div>
+                    <dt>Source file</dt>
+                    <dd>{{ dataset.source_filename }}</dd>
+                </div>
+                <div>
+                    <dt>Grade scale</dt>
+                    <dd>0–{{ dataset.grade_scale_max }}</dd>
+                </div>
+                <div>
+                    <dt>Final assessment</dt>
+                    <dd>{{ dataset.g3_label }}</dd>
+                </div>
+            </dl>
+        </section>
+        <section class="filter-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="dashboard-eyebrow">Phase 6 · Filter &amp; Explore</p>
+                    <h2>Explore student performance</h2>
+                    <p class="section-description">Choose any available criteria. All active filters work together.</p>
+                </div><span class="filter-result-count">{{ filtered_count }} matching records</span>
+            </div>
+            <form method="get" class="filter-form">
+                <fieldset>
+                    <legend>Academic Performance</legend>
+                    <div class="filter-field"><label for="g3_min">{{ dataset.g3_label }} minimum</label><input
+                            id="g3_min" name="g3_min" type="number" min="0" max="{{ dataset.grade_scale_max }}"
+                            step="0.01" value="{{ filters.get('g3_min', '') }}" placeholder="No minimum"></div>
+                    <div class="filter-field"><label for="g3_max">{{ dataset.g3_label }} maximum</label><input
+                            id="g3_max" name="g3_max" type="number" min="0" max="{{ dataset.grade_scale_max }}"
+                            step="0.01" value="{{ filters.get('g3_max', '') }}" placeholder="No maximum"></div>{% if
+                    dataset.g1_label %}<div class="filter-field"><label for="g1_min">{{ dataset.g1_label }}
+                            minimum</label><input id="g1_min" name="g1_min" type="number" min="0"
+                            max="{{ dataset.grade_scale_max }}" step="0.01" value="{{ filters.get('g1_min', '') }}"
+                            placeholder="No minimum"></div>
+                    <div class="filter-field"><label for="g1_max">{{ dataset.g1_label }} maximum</label><input
+                            id="g1_max" name="g1_max" type="number" min="0" max="{{ dataset.grade_scale_max }}"
+                            step="0.01" value="{{ filters.get('g1_max', '') }}" placeholder="No maximum"></div>{% endif
+                    %}{% if dataset.g2_label %}<div class="filter-field"><label for="g2_min">{{ dataset.g2_label }}
+                            minimum</label><input id="g2_min" name="g2_min" type="number" min="0"
+                            max="{{ dataset.grade_scale_max }}" step="0.01" value="{{ filters.get('g2_min', '') }}"
+                            placeholder="No minimum"></div>
+                    <div class="filter-field"><label for="g2_max">{{ dataset.g2_label }} maximum</label><input
+                            id="g2_max" name="g2_max" type="number" min="0" max="{{ dataset.grade_scale_max }}"
+                            step="0.01" value="{{ filters.get('g2_max', '') }}" placeholder="No maximum"></div>{% endif
+                    %}
+                </fieldset>{% if studytime_categorical or studytime_options or quality.missing_studytime <
+                    quality.total_records %}<fieldset>
+                    <legend>Study Habits</legend>{% if studytime_categorical %}<div class="filter-field filter-full">
+                        <label for="studytime">Study-time categories</label><select id="studytime" name="studytime"
+                            multiple size="4">{% for option in studytime_options %}<option value="{{ option }}" {% if
+                                option|string in filters.get('studytime', []) %}selected{% endif %}>{% if option == 1
+                                %}Less than 2 hours/week{% elif option == 2 %}2–5 hours/week{% elif option == 3 %}5–10
+                                hours/week{% elif option == 4 %}More than 10 hours/week{% else %}Category {{ option }}{%
+                                endif %}</option>{% endfor %}</select><small>Hold Ctrl or Command to select more than
+                            one category. Leave unchanged for all categories.</small>
+                    </div>{% else %}<div class="filter-range">
+                        <div class="filter-field"><label for="studytime_min">Minimum study hours</label><input
+                                id="studytime_min" name="studytime_min" type="number" min="0" step="0.01"
+                                value="{{ filters.get('studytime_min', '') }}" placeholder="No minimum"></div>
+                        <div class="filter-field"><label for="studytime_max">Maximum study hours</label><input
+                                id="studytime_max" name="studytime_max" type="number" min="0" step="0.01"
+                                value="{{ filters.get('studytime_max', '') }}" placeholder="No maximum"></div>
+                    </div>{% endif %}</fieldset>{% endif %}{% if quality.missing_absences < quality.total_records
+                        %}<fieldset>
+                        <legend>Attendance</legend>
+                        <div class="filter-field filter-full"><label for="absence_group">Absence
+                                categories</label><select id="absence_group" name="absence_group" multiple size="4">
+                                <option value="none" {% if 'none' in filters.get('absence_group', []) %}selected{% endif
+                                    %}>No absences (0)</option>
+                                <option value="low" {% if 'low' in filters.get('absence_group', []) %}selected{% endif
+                                    %}>Low (1–5)</option>
+                                <option value="moderate" {% if 'moderate' in filters.get('absence_group', [])
+                                    %}selected{% endif %}>Moderate (6–10)</option>
+                                <option value="high" {% if 'high' in filters.get('absence_group', []) %}selected{% endif
+                                    %}>High (above 10)</option>
+                            </select><small>Hold Ctrl or Command to select more than one category. Leave unchanged for
+                                all categories.</small></div>
+                        </fieldset>{% endif %}<div class="filter-summary">{% if filters %}<b>Active filters:</b> {% for
+                            key, value in filters.items() %}{{ key|replace('_', ' ')|title }}: {{ value|join(', ') if
+                            value is iterable and value is not string else value }}{% if not loop.last %} · {% endif
+                            %}{% endfor %}{% else %}No filters selected{% endif %}</div>
+                        <div class="filter-actions"><button class="primary-action" type="submit">Apply
+                                Filters</button><a class="secondary-action"
+                                href="{{ url_for('analytics.dataset_dashboard', dataset_id=dataset.id) }}">Clear All
+                                Filters</a></div>
+            </form>{% if filtered_count == 0 %}<p class="filter-empty-state">No students match your selected filters.
+                Try changing or clearing your filters.</p>{% endif %}
+        </section>
+        <section class="analytics-section">
+            <div class="section-heading">
+                <div>
+                    <p class="dashboard-eyebrow">Class Performance Overview</p>
+                    <h2>Overall class performance</h2>
+                    <p class="section-description">A quick view of how the class is performing.</p>
+                </div>
+            </div>
+            <div class="analytics-card-grid overview-kpis">
+                <article><span>Overall class average</span><strong>{{ '%.2f'|format(statistics.mean) if statistics.mean
+                        is not none else '—' }} <small>/ {{ dataset.grade_scale_max }}</small></strong><em>{{
+                        performance_label or 'Unavailable' }} performance</em></article>
+                <article><span>Total students</span><strong>{{ quality.total_records }}</strong><em>Imported
+                        records</em></article>
+                <article><span>Good performance</span><strong>{{ good_count }}</strong><em>Good and high categories</em>
+                </article>
+                <article><span>Lower grade groups</span><strong>{{ lower_count }}</strong><em>Very low and low
+                        categories</em></article>
+            </div>
+            <p class="valid-grade-note"><b>{{ quality.valid_g3_records }}</b> valid final grades available for this
+                overview.</p>
+        </section>
+        <section class="analytics-chart-grid overview-charts">
+            <article class="analytics-panel">
+                <div>
+                    <p class="dashboard-eyebrow">How are students performing?</p>
+                    <h2>{{ dataset.g3_label }} distribution</h2>
+                    <p class="panel-explanation">Number and percentage of students in each {{ dataset.g3_label }}
+                        performance category. Grade ranges are shown on the horizontal axis.</p>
+                </div>
+                <div id="grade-distribution" class="chart" aria-label="{{ dataset.g3_label }} grade distribution chart">
+                </div>{% if performance_label %}<p class="chart-takeaway"><b>Key takeaway:</b> Most students are in the
+                    {{ performance_label }} category.</p>{% endif %}
+            </article>
+            <article class="analytics-panel">
+                <div>
+                    <p class="dashboard-eyebrow">Assessment Performance</p>
+                    <h2>How the class performed across assessments</h2>
+                    <p class="panel-explanation">Average scores using the selected dataset's assessment labels.</p>
+                </div>
+                <div id="assessment-comparison" class="chart" aria-label="Assessment comparison chart"></div>
+                <p class="chart-takeaway"><b>Key takeaway:</b> Assessment averages are shown for comparison.</p>
+            </article>
+        </section>
+        <section class="analytics-section factor-analysis-section">
+            <div class="section-heading">
+                <div>
+                    <p class="dashboard-eyebrow">Academic Factors</p>
+                    <h2>Study time and attendance</h2>
+                    <p class="section-description">Compare average final-assessment performance across available groups.
+                    </p>
+                </div>
+            </div>
+            <div class="analytics-analysis-grid">
+                <article class="analytics-panel">
+                    <p class="dashboard-eyebrow">Study-Time Analysis</p>
+                    <h3>Does performance differ across study-time groups?</h3>{% if studytime.available %}<p
+                        class="analytics-note">{% if studytime.categorical %}Categories follow the selected dataset's
+                        source definitions; values are not treated as exact hours.{% else %}Average group scores are
+                        based on verified study hours.{% endif %}</p>
+                    <div id="studytime-analysis" class="chart" aria-label="Study time analysis chart"></div>{% else %}<p
+                        class="empty-analysis">Study-time analysis is unavailable for this dataset.</p>{% endif %}
+                </article>
+                <article class="analytics-panel">
+                    <p class="dashboard-eyebrow">Attendance Analysis</p>
+                    <h3>How do average marks differ between absence groups?</h3>{% if absences.available %}<p
+                        class="analytics-note">Absence units and group definitions are based on the selected dataset.
+                    </p>
+                    <div id="absence-analysis" class="chart" aria-label="Absence analysis chart"></div>{% else %}<p
+                        class="empty-analysis">Attendance analysis is unavailable for this dataset.</p>{% endif %}
+                </article>
+            </div>
+        </section>
+        <section class="analytics-section findings-section">
+            <div class="section-heading">
+                <div>
+                    <p class="dashboard-eyebrow">Important Academic Findings</p>
+                    <h2>What teachers should know</h2>
+                </div>
+            </div>
+            <div class="findings-list">{% if findings %}{% for finding in findings %}<article><span
+                        class="finding-category">{{ finding.category|replace('_', ' ')|title }}</span>
+                    <p>{{ finding.text }}</p>
+                </article>{% endfor %}{% else %}<p class="empty-analysis">There are not enough observations for a
+                    documented finding.</p>{% endif %}</div>
+        </section>
+        <details class="advanced-analysis">
+            <summary>Detailed Statistics <span>Advanced analysis for deeper faculty review</span></summary>
+            <div class="advanced-analysis-body">
+                <div class="analytics-card-grid detail-grid">
+                    <article><span>Median</span><strong>{{ '%.2f'|format(statistics.median) if statistics.median is not
+                            none else '—' }}</strong></article>
+                    <article><span>Standard deviation</span><strong>{{ '%.2f'|format(statistics.population_stddev) if
+                            statistics.population_stddev is not none else '—' }}</strong></article>
+                    <article><span>First quartile (Q1)</span><strong>{{ '%.2f'|format(statistics.q1) if statistics.q1 is
+                            not none else '—' }}</strong></article>
+                    <article><span>Third quartile (Q3)</span><strong>{{ '%.2f'|format(statistics.q3) if statistics.q3 is
+                            not none else '—' }}</strong></article>
+                    <article><span>Highest final grade</span><strong>{{ statistics.maximum if statistics.maximum is not
+                            none else '—' }}</strong></article>
+                    <article><span>Lowest final grade</span><strong>{{ statistics.minimum if statistics.minimum is not
+                            none else '—' }}</strong></article>
+                </div>
+                <div class="scatter-section">
+                    <p class="dashboard-eyebrow">Assessment relationships</p>
+                    <h3>Do earlier assessment scores align with {{ dataset.g3_label }}?</h3>
+                    <p class="panel-explanation">Each point represents one student with valid paired scores. These
+                        charts describe relationships, not causes.</p>
+                    <div class="analytics-chart-grid scatter-grid">{% if assessment_scatter.g1 %}<article
+                            class="analytics-panel">
+                            <h3>{{ dataset.g1_label or 'G1' }} vs {{ dataset.g3_label }}</h3>
+                            <div id="g1-g3-scatter" class="chart scatter-chart" aria-label="G1 versus G3 scatter plot">
+                            </div>
+                        </article>{% endif %}{% if assessment_scatter.g2 %}<article class="analytics-panel">
+                            <h3>{{ dataset.g2_label or 'G2' }} vs {{ dataset.g3_label }}</h3>
+                            <div id="g2-g3-scatter" class="chart scatter-chart" aria-label="G2 versus G3 scatter plot">
+                            </div>
+                        </article>{% endif %}</div>
+                </div>
+            </div>
+        </details>
+        <details class="advanced-analysis quality-details">
+            <summary>Dataset Quality <span>Completeness and missing-value details</span></summary>
+            <div class="advanced-analysis-body">
+                <div class="analytics-card-grid quality-grid">
+                    <article><span>Total records</span><strong>{{ quality.total_records }}</strong></article>
+                    <article><span>Valid G3 records</span><strong>{{ quality.valid_g3_records }}</strong></article>
+                    <article><span>Excluded from G3 analysis</span><strong>{{ quality.excluded_records }}</strong>
+                    </article>
+                    <article><span>Missing G1 / G2</span><strong>{{ quality.missing_g1 if quality.missing_g1 is not none
+                            else '—' }} / {{ quality.missing_g2 if quality.missing_g2 is not none else '—' }}</strong>
+                    </article>
+                    <article><span>Missing study time / absences</span><strong>{{ quality.missing_studytime }} / {{
+                            quality.missing_absences }}</strong></article>
+                </div>
+            </div>
+        </details>
+        <footer class="analytics-footer">EduAnalytics · Academic Performance Platform</footer>
+    </main>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>window.analyticsData = {{ { 'distribution': distribution, 'assessments': assessments, 'studytime': studytime, 'absences': absences, 'assessmentScatter': assessment_scatter, 'finalAssessmentLabel': dataset.g3_label, 'gradeOptions': grade_options, 'studytimeNumericOptions': studytime_numeric_options, 'assessmentOptions': assessment_options, 'selectedAssessment': selected_assessment, 'activeFilters': filters }| tojson }};</script>
+{% endblock %}

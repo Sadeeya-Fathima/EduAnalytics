@@ -4,7 +4,7 @@ import os
 
 from flask import Flask, render_template
 from werkzeug.exceptions import RequestEntityTooLarge
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, CSRFError
 from flask_login import current_user, login_required
 
 from app.extensions import db, login_manager
@@ -84,16 +84,22 @@ def create_app(test_config=None):
     def handle_method_not_allowed(error):
         return render_template("errors/405.html"), 405
 
+    @app.errorhandler(CSRFError)
+    def handle_csrf_error(error):
+        return render_template("errors/400.html", message="This form has expired. Refresh the page and try again."), 400
+
     from app import models  # Register the models with SQLAlchemy
     from app.auth import auth_bp
     from app.admin import admin_bp
     from app.datasets import datasets_bp
+    from app.analytics import analytics_bp
     from app.developer import developer_bp
     from app.setup import setup_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(datasets_bp)
+    app.register_blueprint(analytics_bp)
     app.register_blueprint(developer_bp)
     app.register_blueprint(setup_bp)
 

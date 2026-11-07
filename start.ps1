@@ -82,6 +82,72 @@ function Show-NextPage {
     }
 }
 
+function Test-ServerReady {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$BaseUrl,
+        [Parameter(Mandatory = $true)]
+        [System.Diagnostics.Process]$Process,
+        [int]$Attempts = 20,
+        [int]$DelaySeconds = 1
+    )
+
+    $LastError = $null
+
+    for ($Attempt = 1; $Attempt -le $Attempts; $Attempt++) {
+        $Process.Refresh()
+
+        if ($Process.HasExited) {
+            return @{
+                Ready = $false
+                Error = "The server process exited during startup with code $($Process.ExitCode)."
+            }
+        }
+
+        try {
+            $Response = Invoke-WebRequest `
+                -Uri "$BaseUrl/setup/" `
+                -TimeoutSec 3 `
+                -MaximumRedirection 0 `
+                -UseBasicParsing `
+                -ErrorAction Stop
+
+            if ([int]$Response.StatusCode -in @(200, 302, 403)) {
+                return @{
+                    Ready = $true
+                    Response = $Response
+                }
+            }
+
+            $LastError = "Unexpected HTTP status $([int]$Response.StatusCode)."
+        }
+        catch {
+            $StatusCode = $null
+            if ($_.Exception.Response -and $_.Exception.Response.StatusCode) {
+                $StatusCode = [int]$_.Exception.Response.StatusCode
+            }
+
+            if ($StatusCode -in @(200, 302, 403)) {
+                return @{
+                    Ready = $true
+                    Response = $_.Exception.Response
+                }
+            }
+
+            $LastError = $_.Exception.Message
+        }
+
+        if ($Attempt -lt $Attempts) {
+            Start-Sleep -Seconds $DelaySeconds
+        }
+    }
+
+    return @{
+        Ready = $false
+        Error = "No HTTP response after $Attempts attempts. Last error: $LastError"
+    }
+}
+
 try {
     Set-Location $ProjectRoot
 
@@ -181,7 +247,7 @@ try {
     # 7. Record the PID, then verify the process and HTTP response.
     Set-Content -Path $PidFile -Value $Process.Id
 
-    Start-Sleep -Seconds 2
+    Start-Sleep -Seconds 1
     $Process.Refresh()
 
     if ($Process.HasExited) {
@@ -189,17 +255,17 @@ try {
         throw "EduAnalytics failed to start. Review eduanalytics.log and eduanalytics.log.err."
     }
 
-    try {
-        $Response = Invoke-WebRequest `
-            -Uri "http://127.0.0.1:$ListenPort/" `
-            -TimeoutSec 5 `
-            -UseBasicParsing `
-            -ErrorAction Stop
+    $Readiness = Test-ServerReady `
+        -BaseUrl "http://127.0.0.1:$ListenPort" `
+        -Process $Process
 
+    if ($Readiness.Ready) {
         Write-Host "EduAnalytics started successfully." -ForegroundColor Green
         Write-Host "Local URL: http://127.0.0.1:$ListenPort/"
         Write-Host "Listening host: $ListenHost"
-        Write-Host "HTTP status: $([int]$Response.StatusCode)"
+        if ($Readiness.Response -and $Readiness.Response.StatusCode) {
+            Write-Host "HTTP status: $([int]$Readiness.Response.StatusCode)"
+        }
 
         # Display the correct setup or login destination.
         $LocalDestination = Show-NextPage -BaseUrl "http://127.0.0.1:$ListenPort"
@@ -261,10 +327,16 @@ try {
             Write-Host "Configured host URL: http://${ListenHost}:$ListenPort/"
         }
     }
-    catch {
-        # A running process does not guarantee that HTTP is responding.
-        Write-Host "Waitress is running (PID $($Process.Id)), but the homepage check did not return a response." -ForegroundColor Yellow
-        Write-Host "Review eduanalytics.log and eduanalytics.log.err if the app is inaccessible."
+    else {
+        $Process.Refresh()
+        if ($Process.HasExited) {
+            Remove-Item $PidFile -Force -ErrorAction SilentlyContinue
+            throw "EduAnalytics exited during startup. $($Readiness.Error) Review eduanalytics.log and eduanalytics.log.err."
+        }
+
+        Write-Host "Waitress is listening (PID $($Process.Id)), but the application readiness check did not succeed." -ForegroundColor Yellow
+        Write-Host $Readiness.Error -ForegroundColor Yellow
+        Write-Host "The process was left running for inspection. Review eduanalytics.log and eduanalytics.log.err."
     }
 
     Write-Host ""

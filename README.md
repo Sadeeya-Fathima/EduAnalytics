@@ -40,12 +40,16 @@ data, analytics, and interactive dashboards.
     metadata, imported-record views, active analysis-dataset selection, and
     stored import information.
 -   Responsive dashboard with workspace KPIs and academic dataset cohort cards.
+-   Overview-first Academic Analytics Dashboard with verified summaries,
+    statistics, findings, and dataset-quality information.
+-   Plotly charts for grade distribution, assessment comparison, study-time,
+    attendance, and paired assessment relationships.
+-   Dataset-aware interactive filters with combined filtering, reset behavior,
+    empty-result handling, and matching-record counts.
 -   Modern setup, administration, backup, and error-page interfaces.
 
 ### Planned
 
--   Academic performance summaries and interactive dashboards.
--   Charts, filters, and group comparisons.
 -   Export of filtered records as CSV.
 
 ## Technology Stack
@@ -276,11 +280,15 @@ grouped application suites, including **22 upload-workflow tests** and
 **10 restore-specific tests**. This is historical Sprint 5 evidence.
 
 The latest Sprint 6 full regression run passed **136 tests** using the project
-virtual environment:
+virtual environment. This remains historical Sprint 6 evidence:
 
 ``` powershell
 .\.venv\Scripts\python.exe -m pytest -q
 ```
+
+Sprint 7 verification added the Academic Analytics Dashboard, interactive
+filters, and related regression coverage. The latest full Sprint 7 run passed
+**157 tests** on 7 November 2026.
 
 Both results are recorded verification evidence for the current development
 environment; rerun the suite after future changes.
@@ -347,22 +355,21 @@ rather than exact hours.
 
 ## Next Implementation
 
-Sprint 5 completed the core student-data workflow, and Sprint 6 completed
-Dataset Management. The next work follows the MVP specification's module
-boundaries:
+Sprint 5 completed the core student-data workflow, Sprint 6 completed Dataset
+Management, and Sprint 7 completed the Academic Analytics Dashboard with
+verified summaries, charts, comparisons, and interactive filters.
 
-1.  **Academic Analytics Dashboard** --- calculate verified summaries and
-    add charts, filters, and student-group comparisons for the selected
-    dataset.
-2.  **Filtered Analytics Export** --- export records matching the active
-    dataset and dashboard filters as CSV.
+The next milestone is **Filtered Analytics Export** --- export records
+matching the active dataset and dashboard filters as CSV.
 
 When implementing analytics, preserve the distinction that UCI `studytime`
 values are categorical weekly-study ranges, not exact hours. They must not
 be treated as measured hours unless a separate source provides that unit.
 
-Sprint 7 is now the Academic Analytics Dashboard sprint. Filtered export
-remains planned after analytics.
+Sprint 7 is now complete as the Academic Analytics Dashboard sprint. It
+includes overview analytics, charts, assessment comparisons, interactive
+filters, and verification evidence. Filtered CSV export remains planned as
+the next milestone.
 
 ## Project Documentation
 
@@ -395,9 +402,10 @@ Administrator setup, lifecycle scripts, manual database backup and
 recovery, the Sprint 5 CSV workflow, and Sprint 6 Dataset Management are
 implemented. Sprint 6 includes institution-scoped dataset listing, dashboard
 cohorts and KPIs, metadata and record views, server-validated active dataset
-selection, and stored import information. Sprint 7 will add analytics,
-filters, charts, and comparisons. Filtered export remains planned after
-analytics. Separate-user/machine setup, cross-network access, and production
+selection, and stored import information. Sprint 7 adds the overview-first
+Academic Analytics Dashboard, charts, assessment comparisons, interactive
+filters, and verification evidence. Filtered CSV export remains planned as
+the next milestone. Separate-user/machine setup, cross-network access, and production
 deployment remain unverified. Automated backup scheduling is not
 implemented.
 

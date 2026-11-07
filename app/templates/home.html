@@ -2,10 +2,94 @@
 {% block title %}Dashboard | EduAnalytics{% endblock %}
 {% block content %}
 <div class="dashboard-shell">
-<header class="dashboard-topbar"><a class="dashboard-brand" href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='branding/eduanalytics-emblem.png') }}" alt=""><span>Edu<strong>Analytics</strong></span></a><nav class="dashboard-nav" aria-label="Main navigation"><a class="dashboard-nav-link active" href="{{ url_for('home') }}">Dashboard</a><a class="dashboard-nav-link" href="{{ url_for('datasets.management') }}">Datasets</a><a class="dashboard-nav-link" href="{{ url_for('datasets.upload') }}">Upload Dataset</a>{% if current_user.role == 'admin' %}<a class="dashboard-nav-link" href="{{ url_for('admin.educators') }}">Manage Faculty</a>{% endif %}{% if current_user.role == 'developer' %}<a class="dashboard-nav-link" href="{{ url_for('developer.dashboard') }}">System Tools</a>{% endif %}</nav><div class="dashboard-userbar"><div class="user-summary"><span class="user-avatar">{{ current_user.first_name[:1] }}{{ current_user.last_name[:1] }}</span><span class="user-details"><strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong><small>{{ current_user.role|capitalize }}</small></span></div><form method="POST" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout-button" type="submit">Log out</button></form></div></header>
-<main class="dashboard-main">
-<section class="dashboard-hero-card"><div class="dashboard-hero-copy"><p class="dashboard-eyebrow">Academic performance workspace · {{ current_user.institution.name }}</p><h1>Welcome, {{ current_user.first_name }} {{ current_user.last_name }}</h1><p>Bring your student data into focus and turn academic records into clear, useful insight.</p></div><span class="system-status-compact"><span class="system-status-dot"></span>System Operational</span></section>
-<section class="dashboard-kpis" aria-label="Workspace metrics"><article class="dashboard-kpi"><span class="kpi-icon dataset-icon">▤</span><span class="dashboard-kpi-label">Academic Datasets</span><div><strong>{{ dataset_count }}</strong><em>datasets</em></div><small><span class="kpi-check">✓</span> Across your academic workspace</small></article><article class="dashboard-kpi"><span class="kpi-icon student-icon">♙</span><span class="dashboard-kpi-label">Total Enrolled Students</span><div><strong>{{ student_count }}</strong><em>students</em></div><small>Total records across {{ dataset_count }} dataset{{ '' if dataset_count == 1 else 's' }}</small></article><article class="dashboard-kpi"><span class="kpi-icon faculty-icon">♧</span><span class="dashboard-kpi-label">Faculty Members</span><div><strong>{{ faculty_count }}</strong><em>educators</em></div><small><span class="kpi-check">✓</span> {{ faculty_count }} active educators</small></article></section>
-<section class="dataset-cohorts" aria-labelledby="dataset-cohorts-title"><div class="section-heading"><div><p class="dashboard-eyebrow">Available datasets</p><h2 id="dataset-cohorts-title">Academic Dataset Cohorts</h2><p class="section-description">Open a grade book or prepare a dataset for analytics.</p></div><a class="secondary-action" href="{{ url_for('datasets.management') }}">View all datasets</a></div>{% if datasets %}<div class="cohort-grid">{% for dataset in datasets %}<article class="cohort-card"><div class="cohort-card-top"><span class="cohort-subject">{{ dataset.subject }}</span><span class="cohort-year">{{ dataset.academic_year or 'Year not recorded' }}</span></div><div class="cohort-card-heading"><h3>{{ dataset.name }}</h3><p>{{ dataset.class_section or 'Class not recorded' }}{% if dataset.department %} · {{ dataset.department }}{% endif %}</p></div><div class="cohort-metrics"><div><span>ENROLLED</span><strong>{{ dataset.record_count }}</strong><small>student records</small></div><div><span>GRADE SCALE</span><strong>{{ dataset.grade_scale_max }}</strong><small>maximum score</small></div></div><div class="cohort-assessments"><span>Assessments</span><strong>{% if dataset.g1_label or dataset.g2_label or dataset.g3_label %}{{ dataset.g1_label or '—' }}{% if dataset.g2_label %} → {{ dataset.g2_label }}{% endif %}{% if dataset.g3_label %} → {{ dataset.g3_label }}{% endif %}{% else %}Not recorded{% endif %}</strong></div><div class="cohort-card-source"><span title="{{ dataset.source_filename }}">{{ dataset.source_filename }}</span><time datetime="{{ dataset.created_at.isoformat() if dataset.created_at else '' }}">{{ dataset.created_at.strftime('%d %b %Y') if dataset.created_at else 'Date not recorded' }}</time></div><div class="cohort-card-actions"><a class="gradebook-action" href="{{ url_for('datasets.detail', dataset_id=dataset.id) }}">Grade Book</a><span class="analytics-action disabled-action" aria-disabled="true" title="Analytics will be available in Sprint 7">View Analytics</span></div></article>{% endfor %}</div>{% else %}<div class="dashboard-empty-cohorts"><div class="empty-state-icon">＋</div><h3>No academic datasets yet</h3><p>Upload a CSV dataset to create your first academic cohort.</p><a class="primary-action" href="{{ url_for('datasets.upload') }}">Upload Dataset</a></div>{% endif %}</section>
-</main></div>
+    <header class="dashboard-topbar"><a class="dashboard-brand" href="{{ url_for('home') }}"><img
+                src="{{ url_for('static', filename='branding/eduanalytics-emblem.png') }}"
+                alt=""><span>Edu<strong>Analytics</strong></span></a>
+        <nav class="dashboard-nav" aria-label="Main navigation">
+            <a class="dashboard-nav-link active" href="{{ url_for('home') }}">Dashboard</a>
+            <a class="dashboard-nav-link" href="{{ url_for('datasets.management') }}">Datasets</a>
+            <a class="dashboard-nav-link" href="{{ url_for('datasets.upload') }}">Upload Dataset</a>
+            {% if current_user.role == 'admin' %}<a class="dashboard-nav-link"
+                href="{{ url_for('admin.educators') }}">Manage Faculty</a>{% endif %}{% if
+            current_user.role == 'developer' %}<a class="dashboard-nav-link"
+                href="{{ url_for('developer.dashboard') }}">System Tools</a>{% endif %}
+        </nav>
+        <div class="dashboard-userbar">
+            <div class="user-summary"><span class="user-avatar">{{ current_user.first_name[:1] }}{{
+                    current_user.last_name[:1] }}</span><span class="user-details"><strong>{{ current_user.first_name }}
+                        {{ current_user.last_name }}</strong><small>{{ current_user.role|capitalize }}</small></span>
+            </div>
+            <form method="POST" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token"
+                    value="{{ csrf_token() }}"><button class="logout-button" type="submit">Log out</button></form>
+        </div>
+    </header>
+    <main class="dashboard-main">
+        <section class="dashboard-hero-card">
+            <div class="dashboard-hero-copy">
+                <p class="dashboard-eyebrow">Academic performance workspace · {{ current_user.institution.name }}</p>
+                <h1>Welcome, {{ current_user.first_name }} {{ current_user.last_name }}</h1>
+                <p>Bring your student data into focus and turn academic records into clear, useful insight.</p>
+            </div><span class="system-status-compact"><span class="system-status-dot"></span>System Operational</span>
+        </section>
+        <section class="dashboard-kpis" aria-label="Workspace metrics">
+            <article class="dashboard-kpi"><span class="kpi-icon dataset-icon">▤</span><span
+                    class="dashboard-kpi-label">Academic Datasets</span>
+                <div><strong>{{ dataset_count }}</strong><em>datasets</em></div><small><span class="kpi-check">✓</span>
+                    Across your academic workspace</small>
+            </article>
+            <article class="dashboard-kpi"><span class="kpi-icon student-icon">♙</span><span
+                    class="dashboard-kpi-label">Total Enrolled Students</span>
+                <div><strong>{{ student_count }}</strong><em>students</em></div><small>Total records across {{
+                    dataset_count }} dataset{{ '' if dataset_count == 1 else 's' }}</small>
+            </article>
+            <article class="dashboard-kpi"><span class="kpi-icon faculty-icon">♧</span><span
+                    class="dashboard-kpi-label">Faculty Members</span>
+                <div><strong>{{ faculty_count }}</strong><em>educators</em></div><small><span class="kpi-check">✓</span>
+                    {{ faculty_count }} active educators</small>
+            </article>
+        </section>
+        <section class="dataset-cohorts" aria-labelledby="dataset-cohorts-title">
+            <div class="section-heading">
+                <div>
+                    <p class="dashboard-eyebrow">Available datasets</p>
+                    <h2 id="dataset-cohorts-title">Academic Dataset Cohorts</h2>
+                    <p class="section-description">Open a grade book or explore a dataset in Academic Analytics.</p>
+                </div><a class="secondary-action" href="{{ url_for('datasets.management') }}">View all datasets</a>
+            </div>{% if datasets %}<div class="cohort-grid">{% for dataset in datasets %}<article class="cohort-card">
+                    <div class="cohort-card-top"><span class="cohort-subject">{{ dataset.subject }}</span><span
+                            class="cohort-year">{{ dataset.academic_year or 'Year not recorded' }}</span></div>
+                    <div class="cohort-card-heading">
+                        <h3>{{ dataset.name }}</h3>
+                        <p>{{ dataset.class_section or 'Class not recorded' }}{% if dataset.department %} · {{
+                            dataset.department }}{% endif %}</p>
+                    </div>
+                    <div class="cohort-metrics">
+                        <div><span>ENROLLED</span><strong>{{ dataset.record_count }}</strong><small>student
+                                records</small></div>
+                        <div><span>GRADE SCALE</span><strong>{{ dataset.grade_scale_max }}</strong><small>maximum
+                                score</small></div>
+                    </div>
+                    <div class="cohort-assessments"><span>Assessments</span><strong>{% if dataset.g1_label or
+                            dataset.g2_label or dataset.g3_label %}{{ dataset.g1_label or '—' }}{% if dataset.g2_label
+                            %} → {{ dataset.g2_label }}{% endif %}{% if dataset.g3_label %} → {{ dataset.g3_label }}{%
+                            endif %}{% else %}Not recorded{% endif %}</strong></div>
+                    <div class="cohort-card-source"><span title="{{ dataset.source_filename }}">{{
+                            dataset.source_filename }}</span><time
+                            datetime="{{ dataset.created_at.isoformat() if dataset.created_at else '' }}">{{
+                            dataset.created_at.strftime('%d %b %Y') if dataset.created_at else 'Date not recorded'
+                            }}</time></div>
+                    <div class="cohort-card-actions"><a class="gradebook-action"
+                            href="{{ url_for('datasets.detail', dataset_id=dataset.id) }}">Grade Book</a><a
+                            class="analytics-action"
+                            href="{{ url_for('analytics.dataset_dashboard', dataset_id=dataset.id) }}">View
+                            Analytics</a></div>
+                </article>{% endfor %}</div>{% else %}<div class="dashboard-empty-cohorts">
+                <div class="empty-state-icon">＋</div>
+                <h3>No academic datasets yet</h3>
+                <p>Upload a CSV dataset to create your first academic cohort.</p><a class="primary-action"
+                    href="{{ url_for('datasets.upload') }}">Upload Dataset</a>
+            </div>{% endif %}
+        </section>
+    </main>
+</div>
 {% endblock %}

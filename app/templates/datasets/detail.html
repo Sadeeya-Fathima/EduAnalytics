@@ -29,7 +29,7 @@
                 <p class="dashboard-intro">{{ dataset.subject }}{% if dataset.class_section %} · {{ dataset.class_section }}{% endif %}{% if dataset.academic_year %} · {{ dataset.academic_year }}{% endif %}</p>
             </div>
             <div class="dataset-detail-action">
-                <div class="dataset-detail-actions">{% if active_dataset and active_dataset.id == dataset.id %}<p class="active-dataset-badge">Set for analysis</p>{% else %}<form method="post" action="{{ url_for('datasets.select', dataset_id=dataset.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="secondary-action" type="submit">Set for Analysis</button></form>{% endif %}<span class="primary-action disabled-action" aria-disabled="true" title="Analytics will be available in Sprint 7">Analyze Dataset</span></div>
+                <div class="dataset-detail-actions">{% if active_dataset and active_dataset.id == dataset.id %}<p class="active-dataset-badge">Set for analysis</p>{% else %}<form method="post" action="{{ url_for('datasets.select', dataset_id=dataset.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="secondary-action" type="submit">Set for Analysis</button></form>{% endif %}<a class="primary-action" href="{{ url_for('analytics.dataset_dashboard', dataset_id=dataset.id) }}">Analyze Dataset</a></div>
             </div>
         </section>
         <section class="dataset-detail-grid" aria-label="Dataset metadata">

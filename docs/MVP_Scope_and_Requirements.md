@@ -6,14 +6,15 @@
 **Project type:** VTU BCD586 Mini Project
 **Team size:** 3 students
 **Development timeline:** 8 weeks
-**Status:** Approved baseline; Sprint 5 upload and validation scope completed
+**Status:** Approved baseline; Sprint 7 analytics and interactive-filter scope completed; filtered export pending
 
-**Revision note (31 October 2026):** The CSV ingestion requirements now
+**Revision note (7 November 2026):** The CSV ingestion requirements now
 reflect the completed Sprint 5 implementation: dynamic teacher-defined
 headers, automatic preview and validation, row exclusion, server-side
 preview tokens, transactional imports, import-result feedback, and upload
-safeguards. Analytics, dataset selection/history, and export remain future
-MVP work.
+safeguards. Sprint 7 analytics, selected-dataset analysis, and interactive
+filters are now implemented and verified. Filtered CSV export remains the
+next milestone.
 
 ---
 
@@ -398,9 +399,9 @@ A feature being technically possible does not make it part of the frozen scope.
 
 - Implement interactive dashboard filters.
 - Ensure metrics and charts update consistently.
-- Implement filtered CSV export.
+- Begin filtered CSV export design; implementation remains the next milestone.
 
-**Milestone:** Filtered analytics and exported records agree.
+**Milestone:** Filtered analytics are verified; filtered export remains pending.
 
 ### Week 7 — Integration and Testing
 
@@ -490,19 +491,19 @@ scope; a checked item does not imply that the entire MVP is complete.
       dashboard cohort cards.
 - [x] A user can select a dataset for analysis, with server-side validation
       and session persistence.
-- [ ] The dashboard uses the selected dataset rather than unrelated records.
+- [x] The dashboard uses the selected dataset rather than unrelated records.
 - [x] Dataset details show the available stored upload/import information,
       including source, uploader, timestamp, status, and imported record count.
 
 ### E. Analytics
 
-- [ ] The record count matches the valid records in the selected dataset.
-- [ ] Average, minimum, and maximum final grades match independently verified calculations.
-- [ ] Grade-distribution and academic-comparison charts render correctly.
-- [ ] Study-time and absence analyses use the actual available source fields.
-- [ ] Filters update metrics and visualizations consistently.
-- [ ] Empty results and missing data are handled without application crashes.
-- [ ] Chart titles, axes, and grade scale are understandable.
+- [x] The record count matches the valid records in the selected dataset.
+- [x] Average, minimum, and maximum final grades match independently verified calculations.
+- [x] Grade-distribution and academic-comparison charts render correctly.
+- [x] Study-time and absence analyses use the actual available source fields.
+- [x] Filters update metrics and visualizations consistently.
+- [x] Empty results and missing data are handled without application crashes.
+- [x] Chart titles, axes, and grade scale are understandable.
 
 ### F. Export
 

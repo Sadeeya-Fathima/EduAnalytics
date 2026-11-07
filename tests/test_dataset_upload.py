@@ -222,6 +222,22 @@ def test_uploaded_csv_reports_invalid_grade():
     assert b"<ul>" not in response.data
 
 
+def test_uploaded_csv_reports_missing_required_student_name():
+    app = make_app()
+    client = app.test_client()
+    login_as(client, "UPLOADEDUCATOR")
+    configure_upload(client, grade_scale_max="20")
+
+    response = upload_csv(
+        client,
+        b"Student Name *,Final Exam *,Study Time,Absences\n"
+        b",15,5,2\n",
+    )
+
+    assert response.status_code == 200
+    assert b"Student Name: a value is required" in response.data
+
+
 def test_uploaded_csv_reports_header_error_when_no_rows_can_be_parsed():
     app = make_app()
     client = app.test_client()
