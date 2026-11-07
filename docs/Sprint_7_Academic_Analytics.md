@@ -1053,9 +1053,10 @@ Use suitable floating-point tolerances in automated tests.
 
 | Date | Command / test group | Result | Notes |
 |---|---|---|---|
-| 2026-11-07 | Full pytest regression suite | 155 passed | Automated analytics, authentication, authorization, lifecycle, upload, and Dataset Management coverage passed, including dedicated missing-identifier preprocessing coverage. |
+| 2026-11-07 | Full pytest regression suite — intermediate | 155 passed | Earlier automated result after the initial Sprint 7 verification updates. Superseded as the authoritative final result by the 157-test run below. |
 | 2026-11-07 | Manual browser verification | Passed | Admin workflow verified from `/datasets` → `/dataset/1` → `/analytics/1`; invalid dataset returned the branded 404 page; dashboard, charts, filters, reset, responsive layout, isolation, lifecycle, and regression workflows confirmed. |
 | 2026-11-07 | Security and lifecycle test groups | 67 passed | Analytics dashboard, preprocessing, authorization, and developer-security tests passed, including unauthenticated access, role boundaries, dataset isolation, session behavior, and protected developer routes. |
+| 2026-11-07 | Final full pytest regression suite | 157 passed in 78.34 seconds | Authoritative final automated result after the final documentation and security/error-handling updates. |
 
 Previous sprint test results must not be recorded as Sprint 7 test evidence.
 
@@ -1128,7 +1129,7 @@ All applicable automated tests must pass, existing functionality must remain int
 | 2026-11-04 | Extended expected statistical test results. | Improve independent verification. | Defined |
 | 2026-11-04 | Moved interactive filters into Sprint 7. | Explicit revision of sprint allocation. | Approved in planning draft |
 | 2026-11-04 | Retained filtered CSV export for the subsequent milestone. | Keep Sprint 7 focused. | Defined |
-| 2026-11-07 | Phase 7 — Integration and verification | Ran the complete automated regression suite, confirmed analytics authorization and dataset isolation coverage, verified existing application behavior remains intact, and recorded the completed manual browser workflow. | 155 tests passed; manual acceptance verification recorded in Sections 11 and 12. | Complete; final review approval remains before the single GitHub push |
+| 2026-11-07 | Phase 7 — Integration and verification | Ran the complete automated regression suite, confirmed analytics authorization and dataset isolation coverage, verified existing application behavior remains intact, and recorded the completed manual browser workflow. | 155 tests passed in the earlier intermediate run; manual acceptance verification recorded in Sections 11 and 12. | Complete; superseded by the final 157-test verification below |
 | 2026-11-07 | Final regression verification | Re-ran the complete test suite after final documentation and security/error-handling updates. | 157 passed in 78.34 seconds. | Final review complete; commit and push remain approval-gated. |
 
 ---
@@ -1137,8 +1138,8 @@ All applicable automated tests must pass, existing functionality must remain int
 
 **Implementation status: PHASES 1–7 COMPLETE; MANUAL ACCEPTANCE VERIFIED**
 
-**Next action: Final review approval, then perform the single Sprint 7 GitHub push when approved.**
+**Release statement: Sprint 7 implementation, documentation, automated verification, and manual acceptance are complete. The final 157-test result is authoritative; filtered CSV export remains the next milestone.**
 
-Phase 1 compatibility review is complete. Continue implementing one phase at a
-time and preserve the documented separation between analytics services, Flask
+Phase 1 compatibility review and all subsequent Sprint 7 phases are complete.
+The release record preserves the separation between analytics services, Flask
 routes, templates, and visualization code.

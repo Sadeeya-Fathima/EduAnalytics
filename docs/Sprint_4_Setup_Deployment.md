@@ -219,6 +219,12 @@ The user-facing workflow should hide routine developer details behind scripts an
 
 **Status:** Complete - configurable binding, automatic LAN URL display, and second-device access verified.
 
+**Additional validation (2026-11-07):** With `EDUANALYTICS_HOST=0.0.0.0`,
+the documented startup workflow confirmed HTTP 200 responses from both
+`http://127.0.0.1:5000/` and the host LAN URL
+`http://192.168.1.18:5000/`. The validation server was stopped afterward,
+the stale PID file was cleaned up, and no EduAnalytics process remained.
+
 **Notes / decisions:** `0.0.0.0` is a listening address, not an address clients should open. It binds all IPv4 interfaces, so use it only on a trusted network and review firewall scope rather than disabling the firewall. No firewall rules were added. A successful test on Wi-Fi `192.168.1.0/24` does not establish portability to another network or production readiness. The server was stopped after the test, and the temporary process-level override was cleared.
 
 ### Phase 6 - Manual backup and recovery
