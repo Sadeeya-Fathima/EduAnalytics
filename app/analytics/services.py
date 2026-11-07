@@ -1,5 +1,7 @@
 """Request-scoped dataset retrieval and preprocessing for Sprint 7."""
 
+import csv
+from io import StringIO
 from dataclasses import dataclass
 
 import pandas as pd
@@ -16,6 +18,41 @@ ANALYSIS_COLUMNS = (
     "studytime",
     "absences",
 )
+
+EXPORT_COLUMNS = (
+    "student_name",
+    "g1",
+    "g2",
+    "g3",
+    "studytime",
+    "absences",
+)
+
+
+def _safe_csv_text(value):
+    """Prevent common spreadsheet formula injection for exported text."""
+    text = str(value)
+    if text.startswith(("=", "+", "-", "@")):
+        return f"'{text}"
+    return text
+
+
+def filtered_records_csv(records: pd.DataFrame) -> bytes:
+    """Serialize approved filtered records as UTF-8 CSV bytes."""
+    output = StringIO(newline="")
+    writer = csv.writer(output, lineterminator="\n")
+    writer.writerow(EXPORT_COLUMNS)
+    for row in records.loc[:, EXPORT_COLUMNS].itertuples(index=False, name=None):
+        values = []
+        for column, value in zip(EXPORT_COLUMNS, row):
+            if pd.isna(value):
+                values.append("")
+            elif column == "student_name":
+                values.append(_safe_csv_text(value))
+            else:
+                values.append(value)
+        writer.writerow(values)
+    return output.getvalue().encode("utf-8")
 
 
 @dataclass(frozen=True)

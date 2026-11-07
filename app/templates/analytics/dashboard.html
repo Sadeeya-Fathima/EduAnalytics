@@ -126,7 +126,8 @@
                         <div class="filter-actions"><button class="primary-action" type="submit">Apply
                                 Filters</button><a class="secondary-action"
                                 href="{{ url_for('analytics.dataset_dashboard', dataset_id=dataset.id) }}">Clear All
-                                Filters</a></div>
+                                Filters</a><a class="secondary-action" aria-label="Export filtered records as CSV"
+                                href="{{ url_for('analytics.export_dataset', dataset_id=dataset.id) }}{% if request.query_string %}?{{ request.query_string.decode('utf-8') }}{% endif %}">Export CSV</a></div>
             </form>{% if filtered_count == 0 %}<p class="filter-empty-state">No students match your selected filters.
                 Try changing or clearing your filters.</p>{% endif %}
         </section>

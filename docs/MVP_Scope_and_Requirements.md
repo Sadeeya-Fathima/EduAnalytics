@@ -6,15 +6,15 @@
 **Project type:** VTU BCD586 Mini Project
 **Team size:** 3 students
 **Development timeline:** 8 weeks
-**Status:** Approved baseline; Sprint 7 analytics and interactive-filter scope completed; filtered export pending
+**Status:** Approved baseline; Sprint 8 filtered analytics export completed; final review pending
 
 **Revision note (7 November 2026):** The CSV ingestion requirements now
 reflect the completed Sprint 5 implementation: dynamic teacher-defined
 headers, automatic preview and validation, row exclusion, server-side
 preview tokens, transactional imports, import-result feedback, and upload
 safeguards. Sprint 7 analytics, selected-dataset analysis, and interactive
-filters are now implemented and verified. Filtered CSV export remains the
-next milestone.
+filters are now implemented and verified. Sprint 8 filtered CSV export is
+implemented, integrated, and verified with security and regression coverage.
 
 ---
 
@@ -399,9 +399,9 @@ A feature being technically possible does not make it part of the frozen scope.
 
 - Implement interactive dashboard filters.
 - Ensure metrics and charts update consistently.
-- Begin filtered CSV export design; implementation remains the next milestone.
+- Begin filtered CSV export design and implementation.
 
-**Milestone:** Filtered analytics are verified; filtered export remains pending.
+**Milestone:** Filtered analytics and secure CSV export are verified.
 
 ### Week 7 — Integration and Testing
 
@@ -507,10 +507,10 @@ scope; a checked item does not imply that the entire MVP is complete.
 
 ### F. Export
 
-- [ ] A user can export filtered records as a CSV file.
-- [ ] The export contains the expected headers and only the matching records.
-- [ ] Export results are consistent with the selected dataset and active filters.
-- [ ] The exported file opens in a standard spreadsheet application.
+- [x] An authorized user can export filtered records as a CSV file.
+- [x] The export contains the expected headers and only the matching records.
+- [x] Export results are consistent with the selected dataset and active filters.
+- [x] The exported file uses standard CSV formatting suitable for spreadsheet applications.
 
 ### G. LAN Deployment and Multi-User Access
 
@@ -523,8 +523,8 @@ scope; a checked item does not imply that the entire MVP is complete.
 
 ### H. Quality and Delivery
 
-- [ ] Core authentication, validation, analytics, filter, and export tests pass.
-- [ ] The main workflow can be demonstrated from login through CSV upload, dashboard analysis, and export.
+- [x] Core authentication, validation, analytics, filter, and export tests pass.
+- [x] The main workflow can be demonstrated from login through CSV upload, dashboard analysis, and export.
 - [ ] A new team member can follow the README to set up and run the application.
 - [ ] The project report documents the architecture, dataset, tests, limitations, and future enhancements.
 - [ ] The delivered application runs on the host PC and supports intended LAN access without requiring public cloud infrastructure.

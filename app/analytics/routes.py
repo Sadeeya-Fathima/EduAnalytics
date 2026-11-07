@@ -1,8 +1,11 @@
 """Academic Analytics Dashboard routes."""
 
 from dataclasses import asdict
+from datetime import datetime
+from io import BytesIO
 
-from flask import abort, render_template, request
+from flask import abort, render_template, request, send_file
+from werkzeug.utils import secure_filename
 
 from app.analytics import analytics_bp
 from app.analytics.services import (
@@ -16,6 +19,7 @@ from app.analytics.services import (
     assessment_scatter_data,
     prepare_analysis_input,
     apply_filters,
+    filtered_records_csv,
 )
 from app.auth.decorators import role_required
 from app.datasets.routes import accessible_dataset_or_404, active_dataset_for_current_user
@@ -35,6 +39,30 @@ def dashboard():
 def dataset_dashboard(dataset_id):
     dataset = accessible_dataset_or_404(dataset_id)
     return _render_dashboard(dataset, request.args)
+
+
+@analytics_bp.route("/<int:dataset_id>/export", methods=["GET"])
+@role_required("admin", "educator")
+def export_dataset(dataset_id):
+    """Download the authorized dataset records matching active filters."""
+    dataset = accessible_dataset_or_404(dataset_id)
+    analysis = prepare_analysis_input(dataset)
+    try:
+        filtered_records, _ = apply_filters(
+            analysis.records, request.args, dataset.grade_scale_max
+        )
+    except ValueError as error:
+        abort(400, description=str(error))
+
+    dataset_name = secure_filename(dataset.name or "dataset") or "dataset"
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"analytics_{dataset_name}_{dataset.id}_{timestamp}.csv"
+    return send_file(
+        BytesIO(filtered_records_csv(filtered_records)),
+        mimetype="text/csv; charset=utf-8",
+        as_attachment=True,
+        download_name=filename,
+    )
 
 
 def _render_dashboard(dataset, filter_params=None):

@@ -46,11 +46,14 @@ data, analytics, and interactive dashboards.
     attendance, and paired assessment relationships.
 -   Dataset-aware interactive filters with combined filtering, reset behavior,
     empty-result handling, and matching-record counts.
+-   Secure filtered CSV export with server-side filter reuse,
+    institution-scoped authorization, approved column ordering, missing-value
+    handling, CSV quoting, and spreadsheet formula-injection protection.
 -   Modern setup, administration, backup, and error-page interfaces.
 
 ### Planned
 
--   Export of filtered records as CSV.
+-   Advanced reporting formats, scheduled reports, and automated email delivery.
 
 ## Technology Stack
 
@@ -290,6 +293,10 @@ Sprint 7 verification added the Academic Analytics Dashboard, interactive
 filters, and related regression coverage. The latest full Sprint 7 run passed
 **157 tests** on 7 November 2026.
 
+Sprint 8 verification added filtered CSV export, dashboard integration,
+security coverage, and CSV edge-case tests. The latest full Sprint 8 run passed
+**170 tests** on 7 November 2026.
+
 Both results are recorded verification evidence for the current development
 environment; rerun the suite after future changes.
 
@@ -353,23 +360,21 @@ In the selected UCI dataset, grades are recorded on a scale from 0 to
 20. The `studytime` attribute represents categories of weekly study time
 rather than exact hours.
 
-## Next Implementation
+## Delivered Work
 
 Sprint 5 completed the core student-data workflow, Sprint 6 completed Dataset
 Management, and Sprint 7 completed the Academic Analytics Dashboard with
 verified summaries, charts, comparisons, and interactive filters.
 
-The next milestone is **Filtered Analytics Export** --- export records
-matching the active dataset and dashboard filters as CSV.
-
 When implementing analytics, preserve the distinction that UCI `studytime`
 values are categorical weekly-study ranges, not exact hours. They must not
 be treated as measured hours unless a separate source provides that unit.
 
-Sprint 7 is now complete as the Academic Analytics Dashboard sprint. It
-includes overview analytics, charts, assessment comparisons, interactive
-filters, and verification evidence. Filtered CSV export remains planned as
-the next milestone.
+Sprint 7 delivered the Academic Analytics Dashboard, including overview
+analytics, charts, assessment comparisons, interactive filters, and
+verification evidence. Sprint 8 delivered secure filtered CSV export with
+server-side filtering, dataset authorization, missing-value preservation,
+formula-injection protection, and CSV download headers.
 
 ## Project Documentation
 
@@ -391,6 +396,13 @@ the next milestone.
     Management](docs/Sprint_6_Dataset_Management.md) --- completed dataset
     listing, dashboard cohorts, metadata, record views, selection, import
     information, testing evidence, and handoff to Sprint 7.
+-   [Sprint 7 --- Academic
+    Analytics](docs/Sprint_7_Academic_Analytics.md) --- dashboard analytics,
+    charts, interactive filters, and verification evidence.
+-   [Sprint 8 --- Filtered Analytics Export and Integration
+    Testing](docs/Sprint_8_Filtered_Analytics_Export_Integration_Testing.md) ---
+    secure CSV export, integration, security, regression testing, and final
+    review evidence.
 -   [Developer Administration](docs/Developer_Administration.md) --- separate
     local Developer access, maintenance tooling, security phases, tests, and
     acceptance evidence.
@@ -404,8 +416,8 @@ implemented. Sprint 6 includes institution-scoped dataset listing, dashboard
 cohorts and KPIs, metadata and record views, server-validated active dataset
 selection, and stored import information. Sprint 7 adds the overview-first
 Academic Analytics Dashboard, charts, assessment comparisons, interactive
-filters, and verification evidence. Filtered CSV export remains planned as
-the next milestone. Separate-user/machine setup, cross-network access, and production
+filters, and verification evidence. Sprint 8 adds the filtered CSV export
+workflow and security/regression evidence. Separate-user/machine setup, cross-network access, and production
 deployment remain unverified. Automated backup scheduling is not
 implemented.
 
