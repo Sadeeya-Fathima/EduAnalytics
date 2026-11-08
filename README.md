@@ -294,8 +294,8 @@ filters, and related regression coverage. The latest full Sprint 7 run passed
 **157 tests** on 7 November 2026.
 
 Sprint 8 verification added filtered CSV export, dashboard integration,
-security coverage, and CSV edge-case tests. The latest full Sprint 8 run passed
-**170 tests** on 7 November 2026.
+security coverage, and CSV edge-case tests. Sprint 9 regression and defect
+retest passed **171 tests** on 8 November 2026.
 
 Both results are recorded verification evidence for the current development
 environment; rerun the suite after future changes.
@@ -417,8 +417,10 @@ cohorts and KPIs, metadata and record views, server-validated active dataset
 selection, and stored import information. Sprint 7 adds the overview-first
 Academic Analytics Dashboard, charts, assessment comparisons, interactive
 filters, and verification evidence. Sprint 8 adds the filtered CSV export
-workflow and security/regression evidence. Separate-user/machine setup, cross-network access, and production
-deployment remain unverified. Automated backup scheduling is not
+workflow and security/regression evidence. Sprint 9 verified same-LAN access
+from separate Windows and Android client sessions, role enforcement, and host
+shutdown behavior. Separate Windows-user setup, cross-network access, and
+production deployment remain unverified. Automated backup scheduling is not
 implemented.
 
 **Security note:** Keep the backup folder restricted to authorized

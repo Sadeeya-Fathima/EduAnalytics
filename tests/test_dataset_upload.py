@@ -321,6 +321,33 @@ def test_mixed_rows_show_original_values_red_invalid_cells_and_remarks():
         assert Dataset.query.count() == 0
 
 
+def test_confirm_import_allows_excluding_invalid_rows():
+    app = make_app()
+    client = app.test_client()
+    login_as(client, "UPLOADEDUCATOR")
+    configure_upload(client, grade_scale_max="20", g1_label="First Internal", g2_label="Second Internal")
+    upload_csv(
+        client,
+        b"Student Name *,First Internal *,Second Internal *,Final Exam *,Study Time,Absences\n"
+        b"Student 001,18,17,19,2.5,1\n"
+        b"Student 002,not-a-grade,22,25,invalid,-1\n",
+    )
+    with client.session_transaction() as session:
+        import_token = session["dataset_preview_token"]
+
+    response = client.post(
+        "/datasets/upload/csv",
+        data={"action": "confirm", "import_token": import_token, "exclude_rows": "3"},
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Dataset imported successfully with 1 student record" in response.data
+    with app.app_context():
+        assert Dataset.query.one().record_count == 1
+        assert StudentRecord.query.count() == 1
+
+
 def test_file_failures_are_reported_and_retry_clears_preview():
     app = make_app()
     client = app.test_client()

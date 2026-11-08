@@ -176,7 +176,7 @@
                         {% else %}
                             <button class="workflow-button primary" type="button" id="select-file-button">Upload file</button>
                         {% endif %}
-                        <button class="workflow-button confirm" type="submit" name="action" value="confirm" formnovalidate {% if not upload_result or not upload_result.valid %}disabled{% endif %} title="Confirm and import the validated records">Confirm</button>
+                        <button class="workflow-button confirm" type="submit" name="action" value="confirm" formnovalidate {% if not upload_result or not upload_result.rows or upload_result.valid %}{% else %}disabled{% endif %} title="Confirm and import the validated records">Confirm</button>
                     </div>
                 </div>
 
@@ -270,12 +270,27 @@
             });
         }
         const excludeAll = document.getElementById("exclude-all");
+        const confirmButton = document.querySelector('button[name="action"][value="confirm"]');
+        const invalidRows = Array.from(document.querySelectorAll(".has-row-error"));
+        const syncConfirmState = () => {
+            if (!confirmButton || !invalidRows.length) return;
+            const excluded = new Set(Array.from(document.querySelectorAll(".exclude-row:checked")).map((checkbox) => checkbox.value));
+            const remainingInvalid = invalidRows.some((row) => {
+                const checkbox = row.querySelector(".exclude-row");
+                return checkbox && !excluded.has(checkbox.value);
+            });
+            const remainingRows = document.querySelectorAll(".exclude-row:not(:checked)").length;
+            confirmButton.disabled = remainingInvalid || remainingRows === 0;
+        };
+        document.querySelectorAll(".exclude-row").forEach((checkbox) => checkbox.addEventListener("change", syncConfirmState));
         if (excludeAll) {
             excludeAll.addEventListener("change", () => {
                 document.querySelectorAll(".exclude-row").forEach((checkbox) => {
                     checkbox.checked = excludeAll.checked;
                 });
+                syncConfirmState();
             });
         }
+        syncConfirmState();
     </script>
 {% endblock %}

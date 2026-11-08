@@ -514,12 +514,12 @@ scope; a checked item does not imply that the entire MVP is complete.
 
 ### G. LAN Deployment and Multi-User Access
 
-- [ ] The application runs on one designated host PC and stores its database on that host.
-- [ ] An authorized user can access the application from a second computer on the same institution LAN using the host's LAN address.
-- [ ] Separate browser sessions can authenticate as different authorized users.
-- [ ] Authentication and role permissions apply equally to local and LAN users.
-- [ ] The host firewall permits only the intended LAN access, and the application is not exposed to the public internet.
-- [ ] The team documents that LAN access depends on the host PC and application remaining available.
+- [x] The application runs on one designated host PC and stores its database on that host.
+- [x] An authorized user can access the application from a second computer on the same institution LAN using the host's LAN address.
+- [x] Separate browser sessions can authenticate as different authorized users.
+- [x] Authentication and role permissions apply equally to local and LAN users.
+- [x] The host firewall permits only the intended LAN access, and the application is not exposed to the public internet.
+- [x] The team documents that LAN access depends on the host PC and application remaining available.
 
 ### H. Quality and Delivery
 
@@ -527,7 +527,7 @@ scope; a checked item does not imply that the entire MVP is complete.
 - [x] The main workflow can be demonstrated from login through CSV upload, dashboard analysis, and export.
 - [ ] A new team member can follow the README to set up and run the application.
 - [ ] The project report documents the architecture, dataset, tests, limitations, and future enhancements.
-- [ ] The delivered application runs on the host PC and supports intended LAN access without requiring public cloud infrastructure.
+- [x] The delivered application runs on the host PC and supports intended LAN access without requiring public cloud infrastructure.
 
 **Release rule:** Any failed Must requirement must be fixed or explicitly documented as an unresolved blocker before the team declares the MVP complete.
 

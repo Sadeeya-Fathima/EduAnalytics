@@ -353,14 +353,13 @@ def confirm_import():
     if not submitted_token or submitted_token != preview.get("import_token"):
         flash("This import confirmation has expired. Upload the CSV again before confirming.", "error")
         return redirect(url_for("datasets.upload"))
-    if not preview.get("valid"):
-        flash("Correct the validation errors before confirming the import.", "error")
-        return redirect(url_for("datasets.upload"))
-
     excluded = {int(value) for value in request.form.getlist("exclude_rows")}
     rows = [row for row in preview["rows"] if row["row_number"] not in excluded]
     if not rows:
         flash("Select at least one valid row to import.", "error")
+        return redirect(url_for("datasets.upload"))
+    if any(row.get("_remarks") for row in rows):
+        flash("Correct the validation errors or mark the invalid rows as Do Not Upload before confirming.", "error")
         return redirect(url_for("datasets.upload"))
 
     try:
