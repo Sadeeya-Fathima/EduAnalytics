@@ -2,9 +2,9 @@
 
 **Student Academic Performance Analytics Platform**
 
-EduAnalytics is a BCD586 mini project that will help teachers and
-administrators explore student academic performance through structured
-data, analytics, and interactive dashboards.
+EduAnalytics is a BCD586 mini project that helps teachers and administrators
+explore student academic performance through structured datasets, analytics,
+and interactive dashboards.
 
 ## Project Objectives
 
@@ -272,30 +272,28 @@ are documented in [Developer Administration](docs/Developer_Administration.md).
 
 ### 7. Run automated tests
 
-From the project root, run:
+From the project root, use the project virtual environment:
 
 ``` powershell
-python -m pytest -v
+.\.venv\Scripts\python.exe -m pytest -q
 ```
 
 The Sprint 5 regression evidence records **86 tests** passed across the
 grouped application suites, including **22 upload-workflow tests** and
 **10 restore-specific tests**. This is historical Sprint 5 evidence.
 
-The latest Sprint 6 full regression run passed **136 tests** using the project
-virtual environment. This remains historical Sprint 6 evidence:
+Historical full-regression results:
 
-``` powershell
-.\.venv\Scripts\python.exe -m pytest -q
-```
+| Sprint | Result | Date |
+|---|---:|---|
+| Sprint 5 | 86 passed | Historical record |
+| Sprint 6 | 136 passed | Historical record |
+| Sprint 7 | 157 passed | 7 November 2026 |
+| Sprint 8 | 170 passed | 7 November 2026 |
+| Sprint 9 | 171 passed | 8 November 2026 |
 
-Sprint 7 verification added the Academic Analytics Dashboard, interactive
-filters, and related regression coverage. The latest full Sprint 7 run passed
-**157 tests** on 7 November 2026.
-
-Sprint 8 verification added filtered CSV export, dashboard integration,
-security coverage, and CSV edge-case tests. Sprint 9 regression and defect
-retest passed **171 tests** on 8 November 2026.
+The Sprint 9 result was run with
+`.\.venv\Scripts\python.exe -m pytest -q`.
 
 Both results are recorded verification evidence for the current development
 environment; rerun the suite after future changes.
@@ -344,7 +342,27 @@ Flask debug mode on a network.
 
 EduAnalytics supports both converted UCI-based datasets and institutional
 CSV datasets through the same configured template. Each dataset is imported
-and analyzed independently.
+and analyzed independently. Uploaded files must use this canonical header:
+
+```csv
+student_name,g1,g2,g3,studytime,absences
+```
+
+Canonical field meanings:
+
+- `student_name` — student display name or pseudonymous label.
+- `g1` — first assessment grade.
+- `g2` — second assessment grade.
+- `g3` — final or primary grade; required for every record.
+- `studytime` — optional study-time value; UCI category codes are not exact
+  hours.
+- `absences` — optional non-negative absence value when the source unit is
+  known.
+
+For UCI-derived files, the source columns are `G1`, `G2`, and `G3`. Before
+upload, convert them to the EduAnalytics canonical fields `g1`, `g2`, and
+`g3`; the canonical header uses lowercase names and the exact order shown
+above.
 
 Selected attributes include:
 
@@ -358,23 +376,28 @@ Selected attributes include:
 
 In the selected UCI dataset, grades are recorded on a scale from 0 to
 20. The `studytime` attribute represents categories of weekly study time
-rather than exact hours.
+rather than actual hours. UCI source codes such as `1`, `2`, `3`, and `4` must
+not be reported or analyzed as exact hours per week; they remain categorical
+values.
 
 ## Delivered Work
 
-Sprint 5 completed the core student-data workflow, Sprint 6 completed Dataset
-Management, and Sprint 7 completed the Academic Analytics Dashboard with
-verified summaries, charts, comparisons, and interactive filters.
+Sprint 2 established the Flask application foundation, SQLite database,
+models, templates, navigation, and configuration. Sprint 3 delivered
+authentication, role-based authorization, and educator account management.
+Sprint 4 delivered managed setup/start/stop workflows, host-PC deployment,
+trusted-LAN access, manual backup, and recovery procedures. Sprint 5
+completed the core student-data upload and validation workflow. Sprint 6
+completed Dataset Management. Sprint 7 delivered the Academic Analytics
+Dashboard with summaries, charts, comparisons, and interactive filters.
+Sprint 8 delivered secure filtered CSV export with server-side filtering,
+dataset authorization, missing-value preservation, and formula-injection
+protection.
+Sprint 9 completed end-to-end, LAN/multi-user, security, regression, usability,
+defect-retest, and release-readiness verification.
 
-When implementing analytics, preserve the distinction that UCI `studytime`
-values are categorical weekly-study ranges, not exact hours. They must not
-be treated as measured hours unless a separate source provides that unit.
-
-Sprint 7 delivered the Academic Analytics Dashboard, including overview
-analytics, charts, assessment comparisons, interactive filters, and
-verification evidence. Sprint 8 delivered secure filtered CSV export with
-server-side filtering, dataset authorization, missing-value preservation,
-formula-injection protection, and CSV download headers.
+Analytics must preserve the distinction that UCI `studytime` values are
+categorical weekly-study ranges, not measured hours.
 
 ## Project Documentation
 
@@ -403,6 +426,10 @@ formula-injection protection, and CSV download headers.
     Testing](docs/Sprint_8_Filtered_Analytics_Export_Integration_Testing.md) ---
     secure CSV export, integration, security, regression testing, and final
     review evidence.
+-   [Sprint 9 --- Testing and Quality
+    Assurance](docs/Sprint_9_Testing_and_Quality_Assurance.md) --- end-to-end,
+    LAN and multi-user verification, security checks, regression testing,
+    defect retesting, documentation review, and release-readiness decision.
 -   [Developer Administration](docs/Developer_Administration.md) --- separate
     local Developer access, maintenance tooling, security phases, tests, and
     acceptance evidence.
@@ -432,6 +459,10 @@ controls have been reviewed.
 
 **Project Title:** Student Academic Performance Analytics
 
-**Team Members:** - Sadeeya Fathima - Noor Mifra Nadeem - Shariya Amber
+**Team Members:**
+
+- Sadeeya Fathima
+- Noor Mifra Nadeem
+- Shariya Amber
 
 **Course:** BCD586 --- Mini Project
